@@ -1,0 +1,4 @@
+D:\Temp\aibot\your bot\bin\Debug\YourBot.exe
+D:\Temp\aibot\your bot\bin\Debug\YourBot.pdb
+D:\Temp\aibot\your bot\obj\x86\Debug\YourBot.exe
+D:\Temp\aibot\your bot\obj\x86\Debug\YourBot.pdb

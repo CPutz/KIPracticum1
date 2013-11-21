@@ -1,0 +1,6 @@
+\\soliscom.uu.nl\uu\Users\3118479\aibot\mybot\bin\Debug\MyBot.exe
+\\soliscom.uu.nl\uu\Users\3118479\aibot\mybot\bin\Debug\MyBot.pdb
+\\soliscom.uu.nl\uu\Users\3118479\aibot\mybot\obj\x86\Debug\MyBot.exe
+\\soliscom.uu.nl\uu\Users\3118479\aibot\mybot\obj\x86\Debug\MyBot.pdb
+D:\Temp\aibot\your bot\obj\x86\Debug\MyBot.exe
+D:\Temp\aibot\your bot\obj\x86\Debug\MyBot.pdb
