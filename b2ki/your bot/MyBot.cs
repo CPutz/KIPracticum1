@@ -34,10 +34,10 @@ namespace Ants {
 		
 		
 		public static void Main (string[] args) {
-#if DEBUG
+/*#if DEBUG
             System.Diagnostics.Debugger.Launch();
             while (!System.Diagnostics.Debugger.IsAttached) { }
-#endif
+#endif*/
 
 			new Ants().PlayGame(new MyBot());
 		}
