@@ -10,7 +10,7 @@ namespace Ants {
 
 			// loop through all my ants and try to give them orders
 			foreach (Ant ant in state.MyAnts) {
-				
+
 				// try all the directions
 				foreach (Direction direction in Ants.Aim.Keys) {
 
@@ -29,7 +29,13 @@ namespace Ants {
 				// check if we have time left to calculate more orders
 				if (state.TimeRemaining < 10) break;
 			}
-			
+
+
+            //Find path example
+            /*Search s = new Search(state, state.GetDistance);
+            List<Location> path = s.AStar(state.MyAnts[0], state.FoodTiles[0]);
+
+            IssueOrder(state, state.MyAnts[0], new List<Direction>(state.GetDirections(path[0], path[1]))[0]);*/
 		}
 		
 		
