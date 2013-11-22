@@ -48,11 +48,13 @@
   <ItemGroup>
     <Compile Include="Ants.cs" />
     <Compile Include="Bot.cs" />
+    <Compile Include="DataStructures.cs" />
     <Compile Include="Direction.cs" />
     <Compile Include="GameState.cs" />
     <Compile Include="IGameState.cs" />
     <Compile Include="Location.cs" />
     <Compile Include="MyBot.cs" />
+    <Compile Include="Search.cs" />
     <Compile Include="Tile.cs" />
   </ItemGroup>
   <ItemGroup>
