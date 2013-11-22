@@ -20,7 +20,7 @@ namespace Ants {
 
 					// GetIsPassable returns true if the location is land
 					if (state.GetIsPassable(newLoc)) {
-						IssueOrder(ant, direction);
+                        IssueOrder(state, ant, direction);
 						// stop now, don't give 1 and multiple orders
 						break;
 					}
@@ -34,10 +34,10 @@ namespace Ants {
 		
 		
 		public static void Main (string[] args) {
-/*#if DEBUG
+#if DEBUG
             System.Diagnostics.Debugger.Launch();
             while (!System.Diagnostics.Debugger.IsAttached) { }
-#endif*/
+#endif
 
 			new Ants().PlayGame(new MyBot());
 		}

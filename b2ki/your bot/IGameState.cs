@@ -122,7 +122,15 @@ namespace Ants {
 		/// <param name="loc2">The location to determine directions towards.</param>
 		/// <returns>The 1 or 2 closest directions from <paramref name="loc1"/> to <paramref name="loc2"/></returns>
 		ICollection<Direction> GetDirections (Location loc1, Location loc2);
-		
+
+        /// <summary>
+        /// Tells the gamestate that an ant is moved next turn, in Direction <paramref name="direction"/>. 
+        /// This method should always be called when an ant is moved.
+        /// </summary>
+        /// <param name="ant">The ant to be moved</param>
+        /// <param name="direction">The direction the ant is moved in</param>
+        void MoveAnt(Ant ant, Direction direction);
+
 		bool GetIsVisible(Location loc);
 	}
 }

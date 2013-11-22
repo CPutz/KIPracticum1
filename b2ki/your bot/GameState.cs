@@ -30,6 +30,10 @@ namespace Ants {
 		public List<Location> DeadTiles { get; private set; }
 		public List<Location> FoodTiles { get; private set; }
 
+        //keeps track of where all ants will be positioned in the next turn.
+        private int[,] myAntsTemp;
+        private int antNumber;
+
 		public Tile this[Location location] {
 			get { return this.map[location.Row, location.Col]; }
 		}
@@ -60,6 +64,9 @@ namespace Ants {
 			EnemyHills = new List<AntHill>();
 			DeadTiles = new List<Location>();
 			FoodTiles = new List<Location>();
+
+            myAntsTemp = new int[height, width];
+            antNumber = 1;
 			
 			map = new Tile[height, width];
 			for (int row = 0; row < height; row++) {
@@ -94,13 +101,19 @@ namespace Ants {
 
 		public void AddAnt (int row, int col, int team) {
 			map[row, col] = Tile.Ant;
-			
-			Ant ant = new Ant(row, col, team);
-			if (team == 0) {
-				MyAnts.Add(ant);
-			} else {
-				EnemyAnts.Add(ant);
-			}
+            Ant ant;
+            if (team == 0) {
+                if (myAntsTemp[row, col] != default(int)) {
+                    ant = new Ant(row, col, team, myAntsTemp[row, col]);
+                } else {
+                    ant = new Ant(row, col, team, antNumber);
+                    antNumber++;
+                }
+                MyAnts.Add(ant);
+            } else {
+                ant = new Ant(row, col, team, 0);
+                EnemyAnts.Add(ant);
+            }
 		}
 
 		public void AddFood (int row, int col) {
@@ -144,6 +157,12 @@ namespace Ants {
 			else
 				EnemyHills.Add (hill);
 		}
+
+        public void MoveAnt(Ant ant, Direction direction) {
+            Location newLoc = this.GetDestination(ant, direction);
+            myAntsTemp[newLoc.Row, newLoc.Col] = ant.AntNumber;
+        }
+
 		#endregion
 
 		/// <summary>

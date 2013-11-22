@@ -5,8 +5,9 @@ namespace Ants {
 
 		public abstract void DoTurn(IGameState state);
 
-		protected void IssueOrder(Location loc, Direction direction) {
-			System.Console.Out.WriteLine("o {0} {1} {2}", loc.Row, loc.Col, direction.ToChar());
+		protected void IssueOrder(IGameState state, Ant ant, Direction direction) {
+            state.MoveAnt(ant, direction);
+			System.Console.Out.WriteLine("o {0} {1} {2}", ant.Row, ant.Col, direction.ToChar());
 		}
 	}
 }
