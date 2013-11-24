@@ -31,15 +31,56 @@ namespace Ants {
 			}
 
 
+
             //Find path example
             /*Search s = new Search(state, state.GetDistance);
             List<Location> path = s.AStar(state.MyAnts[0], state.FoodTiles[0]);
 
             IssueOrder(state, state.MyAnts[0], new List<Direction>(state.GetDirections(path[0], path[1]))[0]);*/
 		}
-		
-		
-		public static void Main (string[] args) {
+
+
+        private AntMode GetAntMode(IGameState state) {
+            float x, y, z;
+
+            //extremely slow!
+            int fog = 0;
+            for (int row = 0; row < state.Height; ++row) {
+                for (int col = 0; col < state.Width; ++col) {
+                    if (!state.GetIsVisible(new Location(row, col))) {
+                        fog++;
+                    }
+                }
+            }
+            float fogFraction = (float)fog / (state.Width * state.Height);
+
+            x = 100 * fogFraction;
+
+            y = 0; //depends on number of targethills and fogFraction
+
+            z = (int)(state.MyAnts.Count / 10);
+
+            float sum = x + y + z;
+
+            float px, py, pz;
+            px = x / sum;
+            py = y / sum;
+            //pz = z / sum;
+
+
+            Random rand = new Random();
+            double num = rand.NextDouble();
+            if (num <= px)
+                return AntMode.Explore;
+            else if (num <= py)
+                return AntMode.Attack;
+            else
+                return AntMode.Defend;
+        }
+
+
+
+        public static void Main(string[] args) {
 /*#if DEBUG
             System.Diagnostics.Debugger.Launch();
             while (!System.Diagnostics.Debugger.IsAttached) { }

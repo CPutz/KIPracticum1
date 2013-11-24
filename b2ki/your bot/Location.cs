@@ -75,7 +75,8 @@ namespace Ants {
 	
 	public class Ant : TeamLocation, IEquatable<Ant> {
         public int AntNumber { get; private set; }
-        
+        public AntMode Mode { get; set; }
+
         public Ant (int row, int col, int team, int antNumber) : base (row, col, team) {
             this.AntNumber = antNumber;
 		}
