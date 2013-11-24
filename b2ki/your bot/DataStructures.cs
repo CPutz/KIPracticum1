@@ -150,15 +150,21 @@ namespace Ants {
         private LLElement<T> head;
         private LLElement<T> last;
 
-        public LinkedList() { }
+        public int Size { get; private set; }
+
+        public LinkedList() {
+            this.Size = 0;
+        }
 
         public void Add(T key) {
             LLElement<T> k = new LLElement<T>(key);
-            if (head != null)
-                last.Next = k;
+            if (this.head != null)
+                this.last.Next = k;
             else
-                head = k;
-            last = k;
+                this.head = k;
+            this.last = k;
+
+            this.Size++;
         }
 
         /*public bool Remove(T key) {
@@ -183,7 +189,7 @@ namespace Ants {
         }*/
 
         public T Search(T key) {
-            LLElement<T> x = head;
+            LLElement<T> x = this.head;
 
             while (x != null) {
                 if (x.Value.Equals(key))
@@ -196,7 +202,7 @@ namespace Ants {
         }
 
         public IEnumerator<T> GetEnumerator() {
-            LLElement<T> x = head;
+            LLElement<T> x = this.head;
 
             while (x != null) {
                 yield return x.Value;
