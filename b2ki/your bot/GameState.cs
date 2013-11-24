@@ -80,14 +80,18 @@ namespace Ants {
 		public void StartNewTurn () {
 			// start timer
 			turnStart = DateTime.Now;
-			
+
+            //fill myAntsTemp data
+            myAntsTemp = new int[Height, Width];
+            foreach (Ant ant in MyAnts) myAntsTemp[ant.Row, ant.Col] = ant.AntNumber;
+
 			// clear ant data
 			foreach (Location loc in MyAnts) map[loc.Row, loc.Col] = Tile.Land;
 			foreach (Location loc in MyHills) map[loc.Row, loc.Col] = Tile.Land;
 			foreach (Location loc in EnemyAnts) map[loc.Row, loc.Col] = Tile.Land;
 			foreach (Location loc in EnemyHills) map[loc.Row, loc.Col] = Tile.Land;
 			foreach (Location loc in DeadTiles) map[loc.Row, loc.Col] = Tile.Land;
-			
+
 			MyHills.Clear();
 			MyAnts.Clear();
 			EnemyHills.Clear();
@@ -161,6 +165,7 @@ namespace Ants {
         public void MoveAnt(Ant ant, Direction direction) {
             Location newLoc = this.GetDestination(ant, direction);
             myAntsTemp[newLoc.Row, newLoc.Col] = ant.AntNumber;
+            myAntsTemp[ant.Row, ant.Col] = default(int);
         }
 
 		#endregion
@@ -169,10 +174,10 @@ namespace Ants {
 		/// Gets whether <paramref name="location"/> is passable or not.
 		/// </summary>
 		/// <param name="location">The location to check.</param>
-		/// <returns><c>true</c> if the location is not water, <c>false</c> otherwise.</returns>
+		/// <returns><c>true</c> if the location is not water and there is no ant next turn, <c>false</c> otherwise.</returns>
 		/// <seealso cref="GetIsUnoccupied"/>
-		public bool GetIsPassable (Location location) {
-			return map[location.Row, location.Col] != Tile.Water;
+		public bool GetIsPassable (Location location) { 
+			return map[location.Row, location.Col] != Tile.Water && myAntsTemp[location.Row, location.Col] == default(int);
 		}
 		
 		/// <summary>
