@@ -5,10 +5,6 @@ namespace Ants {
 
 	class MyBot : Bot {
 
-        Formation f;
-        Ant leader;
-        bool isMade = false;
-
 		// DoTurn is run once per turn
 		public override void DoTurn (IGameState state) {
 
@@ -34,42 +30,6 @@ namespace Ants {
 				if (state.TimeRemaining < 10) break;
 			}*/
 
-            if (state.MyAnts.Count == 4) {
-                int test = 2;
-                test *= 4;
-            }
-
-            if (!isMade) {
-                leader = state.MyAnts[0];
-                f = new Formation(leader);
-                isMade = true;
-            }
-
-            foreach (Ant ant in state.MyAnts) {
-                /*if (!f.Contains(ant)) {
-                    f.Add(ant);
-                }*/
-                if (!ant.InFormation) {
-                    f.Add(ant);
-                }
-            }
-
-            Search s = new Search(state, state.GetDistance);
-
-            if (state.FoodTiles.Count > 0) {
-                List<Location> path = s.AStar(leader, state.FoodTiles[0]);
-                IssueOrder(state, leader, DirectionFromPath(path, state));
-            }
-
-            Ant last = leader;
-            foreach (Ant ant in f) {
-                if (ant != leader) {
-                    List<Location> path = s.AStar(ant, state.GetDestination(last, f.Orientation));
-                    IssueOrder(state, ant, DirectionFromPath(path, state));
-                }
-                last = ant;
-            }
-
 
             //Find path example
             /*Search s = new Search(state, state.GetDistance);
@@ -84,6 +44,45 @@ namespace Ants {
                 return Direction.None;
             else
                 return new List<Direction>(state.GetDirections(path[0], path[1]))[0];
+        }
+
+
+        private AntMode GetAntMode(IGameState state) {
+            float x, y, z;
+
+            //extremely slow!
+            int fog = 0;
+            for (int row = 0; row < state.Height; ++row) {
+                for (int col = 0; col < state.Width; ++col) {
+                    if (!state.GetIsVisible(new Location(row, col))) {
+                        fog++;
+                    }
+                }
+            }
+            float fogFraction = (float)fog / (state.Width * state.Height);
+
+            x = 100 * fogFraction;
+
+            y = 0; //depends on number of targethills and fogFraction
+
+            z = (int)(state.MyAnts.Count / 10);
+
+            float sum = x + y + z;
+
+            float px, py, pz;
+            px = x / sum;
+            py = y / sum;
+            //pz = z / sum;
+
+
+            Random rand = new Random();
+            double num = rand.NextDouble();
+            if (num <= px)
+                return AntMode.Explore;
+            else if (num <= py)
+                return AntMode.Attack;
+            else
+                return AntMode.Defend;
         }
 
 		
