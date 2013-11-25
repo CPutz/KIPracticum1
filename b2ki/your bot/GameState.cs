@@ -10,6 +10,7 @@ namespace Ants {
 		
 		public int LoadTime { get; private set; }
 		public int TurnTime { get; private set; }
+        public int Turn { get; private set; }
 		
 		private DateTime turnStart;
 		public int TimeRemaining {
@@ -53,6 +54,7 @@ namespace Ants {
 			
 			LoadTime = loadtime;
 			TurnTime = turntime;
+            Turn = 0;
 			
 			ViewRadius2 = viewradius2;
 			AttackRadius2 = attackradius2;
@@ -80,6 +82,8 @@ namespace Ants {
 		public void StartNewTurn () {
 			// start timer
 			turnStart = DateTime.Now;
+
+            Turn++;
 
 			// clear ant data
 			foreach (Location loc in MyAnts) map[loc.Row, loc.Col] = Tile.Land;
@@ -180,8 +184,13 @@ namespace Ants {
 		/// <param name="location">The location to check.</param>
 		/// <returns><c>true</c> if the location is not water and there is no ant next turn, <c>false</c> otherwise.</returns>
 		/// <seealso cref="GetIsUnoccupied"/>
-		public bool GetIsPassable (Location location) { 
-			return map[location.Row, location.Col] != Tile.Water && myAntsTemp[location.Row, location.Col] == null;
+		public bool GetIsPassable (Location location) {
+            bool b = false;
+            foreach (AntHill hill in MyHills) {
+                b |= hill.Equals(location);
+            }
+            
+            return !b && map[location.Row, location.Col] != Tile.Water && myAntsTemp[location.Row, location.Col] == null;
 		}
 		
 		/// <summary>

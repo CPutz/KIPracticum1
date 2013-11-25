@@ -1,0 +1,3 @@
+System.NullReferenceException: Object reference not set to an instance of an object.
+   at Ants.MyBot.DoTurn(IGameState state) in D:\Git_projects\KIPracticum1\b2ki\your bot\MyBot.cs:line 39
+   at Ants.Ants.PlayGame(Bot bot) in D:\Git_projects\KIPracticum1\b2ki\your bot\Ants.cs:line 44

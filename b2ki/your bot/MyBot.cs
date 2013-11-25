@@ -30,12 +30,16 @@ namespace Ants {
 				if (state.TimeRemaining < 10) break;
 			}*/
 
+            foreach (Ant ant in state.MyAnts) {
+
+
+                if (state.TimeRemaining < 10) break;
+            }
 
             //Find path example
             /*Search s = new Search(state, state.GetDistance);
             List<Location> path = s.AStar(state.MyAnts[0], state.FoodTiles[0]);
-
-            IssueOrder(state, state.MyAnts[0], new List<Direction>(state.GetDirections(path[0], path[1]))[0]);*/
+            IssueOrder(state, state.MyAnts[0], DirectionFromPath(path, state));*/
 		}
 
 
@@ -87,10 +91,10 @@ namespace Ants {
 
 		
 		public static void Main (string[] args) {
-/*#if DEBUG
+#if DEBUG
             System.Diagnostics.Debugger.Launch();
             while (!System.Diagnostics.Debugger.IsAttached) { }
-#endif*/
+#endif
 
 			new Ants().PlayGame(new MyBot());
 		}

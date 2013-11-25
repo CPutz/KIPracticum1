@@ -44,6 +44,11 @@ namespace Ants {
 		/// </summary>
 		int SpawnRadius2 { get; }
 
+        /// <summary>
+        /// Gets the current turn number.
+        /// </summary>
+        int Turn { get; }
+
 		/// <summary>
 		/// Gets a list of your currently visible hills.
 		/// </summary>
