@@ -34,6 +34,11 @@ namespace Ants {
 		/// </summary>
 		int ViewRadius2 { get; }
 
+        /// <summary>
+        /// Squareroot of ViewRadius2 and rounded downward.
+        /// </summary>
+        int ViewRadiusRoot { get; }
+
 		/// <summary>
 		/// Gets the ant attack range radius squared.
 		/// </summary>
@@ -78,6 +83,11 @@ namespace Ants {
 		/// Gets a list of food tiles visible this turn.
 		/// </summary>
 		List<Location> FoodTiles { get; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        bool[,] VisibilityMap { get; }
 
 		/// <summary>
 		/// Gets the <see cref="Tile"/> for the <paramref name="location"/>.

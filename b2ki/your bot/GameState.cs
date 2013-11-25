@@ -21,6 +21,7 @@ namespace Ants {
 		}
 
 		public int ViewRadius2 { get; private set; }
+        public int ViewRadiusRoot { get; private set; }
 		public int AttackRadius2 { get; private set; }
 		public int SpawnRadius2 { get; private set; }
 
@@ -34,6 +35,8 @@ namespace Ants {
         //keeps track of where all ants will be positioned in the next turn.
         private Ant[,] myAntsTemp;
         private int antNumber;
+
+        public bool[,] VisibilityMap { get; private set; }
 
 		public Tile this[Location location] {
 			get { return this.map[location.Row, location.Col]; }
@@ -57,6 +60,7 @@ namespace Ants {
             Turn = 0;
 			
 			ViewRadius2 = viewradius2;
+            ViewRadiusRoot = (int)Math.Floor(Math.Sqrt(this.ViewRadius2));
 			AttackRadius2 = attackradius2;
 			SpawnRadius2 = spawnradius2;
 			
@@ -76,6 +80,8 @@ namespace Ants {
 					map[row, col] = Tile.Land;
 				}
 			}
+
+            VisibilityMap = new bool[height, width];
 		}
 
 		#region State mutators
@@ -122,6 +128,20 @@ namespace Ants {
                     antNumber++;
                 }
                 MyAnts.Add(ant);
+
+                //calculate visibility for ant
+                for (int r = -1 * ViewRadiusRoot; r <= ViewRadiusRoot; ++r) {
+                    for (int c = -1 * ViewRadiusRoot; c <= ViewRadiusRoot; ++c) {
+                        int square = r * r + c * c;
+                        if (square < this.ViewRadius2) {
+                            Location loc = GetDestination(ant, new Location(r, c));
+                            
+                            VisibilityMap[loc.Row, loc.Col] = true;
+
+                        }
+                    }
+                }
+
             } else {
                 ant = new Ant(row, col, team, 0);
                 EnemyAnts.Add(ant);
@@ -220,6 +240,17 @@ namespace Ants {
 			return new Location(row, col);
 		}
 
+        public Location GetDestination(Location location, Location direction) {
+
+            int row = (location.Row + direction.Row) % Height;
+            if (row < 0) row += Height; // because the modulo of a negative number is negative
+
+            int col = (location.Col + direction.Col) % Width;
+            if (col < 0) col += Width;
+
+            return new Location(row, col);
+        }
+
 		/// <summary>
 		/// Gets the distance between <paramref name="loc1"/> and <paramref name="loc2"/>.
 		/// </summary>
@@ -277,10 +308,9 @@ namespace Ants {
 		public bool GetIsVisible(Location loc)
 		{
 			List<Location> offsets = new List<Location>();
-			int squares = (int)Math.Floor(Math.Sqrt(this.ViewRadius2));
-			for (int r = -1 * squares; r <= squares; ++r)
+            for (int r = -1 * ViewRadiusRoot; r <= ViewRadiusRoot; ++r)
 			{
-				for (int c = -1 * squares; c <= squares; ++c)
+                for (int c = -1 * ViewRadiusRoot; c <= ViewRadiusRoot; ++c)
 				{
 					int square = r * r + c * c;
 					if (square < this.ViewRadius2)

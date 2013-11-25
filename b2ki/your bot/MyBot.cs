@@ -8,39 +8,48 @@ namespace Ants {
 		// DoTurn is run once per turn
 		public override void DoTurn (IGameState state) {
 
-			// loop through all my ants and try to give them orders
-			/*foreach (Ant ant in state.MyAnts) {
 
-				// try all the directions
-				foreach (Direction direction in Ants.Aim.Keys) {
+            List<Location> ExplorableTiles = new List<Location>();
+            for (int row = 0; row < state.Height; ++row) {
+                for (int col = 0; col < state.Width; ++col) {
+                    Location location = new Location(row, col);
+                    if (state.GetIsPassable(location)) { //&& !state.VisibilityMap[row, col]) {
+                        ExplorableTiles.Add(location);
+                    }
+                }
+            }
 
-					// GetDestination will wrap around the map properly
-					// and give us a new location
-					Location newLoc = state.GetDestination(ant, direction);
 
-					// GetIsPassable returns true if the location is land
-					if (state.GetIsPassable(newLoc)) {
-                        IssueOrder(state, ant, direction);
-						// stop now, don't give 1 and multiple orders
-						break;
-					}
-				}
-				
-				// check if we have time left to calculate more orders
-				if (state.TimeRemaining < 10) break;
-			}*/
+            Random rand = new Random();
+            Search s = new Search(state, state.GetDistance);
 
             foreach (Ant ant in state.MyAnts) {
 
+                List<Location> path;
 
-                if (state.TimeRemaining < 10) break;
+                while ((path = s.AStar(ant, ant.Target)) == null || path.Count == 1) {
+                //if (ant.Target == null) {
+                    ant.Target = ExplorableTiles[rand.Next(0, ExplorableTiles.Count)];
+                }
+                //path = s.AStar(ant, ant.Target);
+
+                IssueOrder(state, ant, DirectionFromPath(path, state));
+
+                if (state.TimeRemaining < 1000) break;
             }
-
-            //Find path example
-            /*Search s = new Search(state, state.GetDistance);
-            List<Location> path = s.AStar(state.MyAnts[0], state.FoodTiles[0]);
-            IssueOrder(state, state.MyAnts[0], DirectionFromPath(path, state));*/
 		}
+
+        private Location GetFogTarget(IGameState state, Random rand) {
+            Location location;
+
+            //do {
+                int row = rand.Next(0, state.Height);
+                int col = rand.Next(0, state.Width);
+                location = new Location(row, col);
+            //} while (state.GetIsVisible(location));
+
+            return location;
+        }
 
 
         private Direction DirectionFromPath(List<Location> path, IGameState state) {
@@ -91,10 +100,10 @@ namespace Ants {
 
 		
 		public static void Main (string[] args) {
-#if DEBUG
+/*#if DEBUG
             System.Diagnostics.Debugger.Launch();
             while (!System.Diagnostics.Debugger.IsAttached) { }
-#endif
+#endif*/
 
 			new Ants().PlayGame(new MyBot());
 		}
