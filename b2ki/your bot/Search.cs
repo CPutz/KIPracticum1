@@ -51,30 +51,33 @@ namespace Ants {
                 closedSet[current.Object.Row, current.Object.Col] = current;
 
                 foreach (Direction direction in Enum.GetValues(typeof(Direction))) {
-                    Location neighbour = gameState.GetDestination(current.Object, direction);
+                    if (direction != Direction.None) {
+                        Location neighbour = gameState.GetDestination(current.Object, direction);
 
-                    int G = current.G + 1; //distance between nodes is always 1
-                    int F = G + heuristic(neighbour, destination);
+                        int G = current.G + 1; //distance between nodes is always 1
+                        int F = G + heuristic(neighbour, destination);
 
-                    //If neighbour in closedSet and F is worse than neighbour.F, or neighbour is not a passable block, then go to next neighbour.
-                    if ((closedSet[neighbour.Row, neighbour.Col] != null && F >= closedSet[neighbour.Row, neighbour.Col].F) ||
-                        !gameState.GetIsPassable(neighbour))
-                        continue;
+                        //If neighbour in closedSet and F is worse than neighbour.F, or neighbour is not a passable block, then go to next neighbour.
+                        if ((closedSet[neighbour.Row, neighbour.Col] != null && F >= closedSet[neighbour.Row, neighbour.Col].F) ||
+                            !gameState.GetIsPassable(neighbour))
+                            continue;
 
-                    bool notInOpen = !openSet.Contains(neighbour);
+                        bool notInOpen = !openSet.Contains(neighbour);
 
-                    //If neighbour not in open (so never encountered or in closed), and if it's in closed, then if F is better
-                    //than neighbour.F, then add neighbour to openSet, or change it's value in closedSet.
-                    if (notInOpen || (closedSet[neighbour.Row, neighbour.Col] != null && F < closedSet[neighbour.Row, neighbour.Col].F)) {
-                        AStarNode<Location> node = new AStarNode<Location>(neighbour);
-                        node.G = G;
-                        node.F = F;
-                        node.cameFrom = current;
+                        //If neighbour not in open (so never encountered or in closed), and if it's in closed, then if F is better
+                        //than neighbour.F, then add neighbour to openSet, or change it's value in closedSet.
+                        if (notInOpen || (closedSet[neighbour.Row, neighbour.Col] != null && F < closedSet[neighbour.Row, neighbour.Col].F)) {
+                            AStarNode<Location> node = new AStarNode<Location>(neighbour);
+                            node.G = G;
+                            node.F = F;
+                            node.cameFrom = current;
 
-                        if (notInOpen) {
-                            openSet.Insert(node);
-                        } else {
-                            closedSet[neighbour.Row, neighbour.Col] = node;
+                            if (notInOpen) {
+                                openSet.Insert(node);
+                            }
+                            else {
+                                closedSet[neighbour.Row, neighbour.Col] = node;
+                            }
                         }
                     }
                 }

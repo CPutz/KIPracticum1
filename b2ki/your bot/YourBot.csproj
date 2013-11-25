@@ -49,8 +49,8 @@
     <Compile Include="Ants.cs" />
     <Compile Include="Bot.cs" />
     <Compile Include="DataStructures.cs" />
-    <Compile Include="Decision.cs" />
     <Compile Include="Direction.cs" />
+    <Compile Include="Formation.cs" />
     <Compile Include="GameState.cs" />
     <Compile Include="IGameState.cs" />
     <Compile Include="Location.cs" />

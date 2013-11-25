@@ -31,7 +31,7 @@ namespace Ants {
 		public List<Location> FoodTiles { get; private set; }
 
         //keeps track of where all ants will be positioned in the next turn.
-        private int[,] myAntsTemp;
+        private Ant[,] myAntsTemp;
         private int antNumber;
 
 		public Tile this[Location location] {
@@ -65,8 +65,8 @@ namespace Ants {
 			DeadTiles = new List<Location>();
 			FoodTiles = new List<Location>();
 
-            myAntsTemp = new int[height, width];
-            antNumber = 1;
+            myAntsTemp = new Ant[height, width];
+            antNumber = 0;
 			
 			map = new Tile[height, width];
 			for (int row = 0; row < height; row++) {
@@ -80,10 +80,6 @@ namespace Ants {
 		public void StartNewTurn () {
 			// start timer
 			turnStart = DateTime.Now;
-
-            //fill myAntsTemp data
-            myAntsTemp = new int[Height, Width];
-            foreach (Ant ant in MyAnts) myAntsTemp[ant.Row, ant.Col] = ant.AntNumber;
 
 			// clear ant data
 			foreach (Location loc in MyAnts) map[loc.Row, loc.Col] = Tile.Land;
@@ -103,12 +99,20 @@ namespace Ants {
 			FoodTiles.Clear();
 		}
 
+        //this method should every turn be called after all ants have been added to MyAn
+        public void UpdateTurn() {
+            myAntsTemp = new Ant[Height, Width];
+            //fill myAntsTemp data
+            foreach (Ant ant in MyAnts) myAntsTemp[ant.Row, ant.Col] = ant;
+        }
+
 		public void AddAnt (int row, int col, int team) {
 			map[row, col] = Tile.Ant;
             Ant ant;
             if (team == 0) {
-                if (myAntsTemp[row, col] != default(int)) {
-                    ant = new Ant(row, col, team, myAntsTemp[row, col]);
+                if (myAntsTemp[row, col] != null) {
+                    ant = myAntsTemp[row, col];
+                    ant.SetLocation(row, col);
                 } else {
                     ant = new Ant(row, col, team, antNumber);
                     antNumber++;
@@ -164,8 +168,8 @@ namespace Ants {
 
         public void MoveAnt(Ant ant, Direction direction) {
             Location newLoc = this.GetDestination(ant, direction);
-            myAntsTemp[newLoc.Row, newLoc.Col] = ant.AntNumber;
-            myAntsTemp[ant.Row, ant.Col] = default(int);
+            myAntsTemp[newLoc.Row, newLoc.Col] = ant;
+            myAntsTemp[ant.Row, ant.Col] = null;
         }
 
 		#endregion
@@ -177,7 +181,7 @@ namespace Ants {
 		/// <returns><c>true</c> if the location is not water and there is no ant next turn, <c>false</c> otherwise.</returns>
 		/// <seealso cref="GetIsUnoccupied"/>
 		public bool GetIsPassable (Location location) { 
-			return map[location.Row, location.Col] != Tile.Water && myAntsTemp[location.Row, location.Col] == default(int);
+			return map[location.Row, location.Col] != Tile.Water && myAntsTemp[location.Row, location.Col] == null;
 		}
 		
 		/// <summary>
