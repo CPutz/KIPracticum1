@@ -13,7 +13,7 @@ namespace Ants {
             for (int row = 0; row < state.Height; ++row) {
                 for (int col = 0; col < state.Width; ++col) {
                     Location location = new Location(row, col);
-                    if (state.GetIsPassable(location)) { //&& !state.VisibilityMap[row, col]) {
+                    if (state.GetIsUnoccupied(location)) { //&& !state.VisibilityMap[row, col]) {
                         ExplorableTiles.Add(location);
                     }
                 }

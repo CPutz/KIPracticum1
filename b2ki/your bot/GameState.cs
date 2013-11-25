@@ -205,12 +205,7 @@ namespace Ants {
 		/// <returns><c>true</c> if the location is not water and there is no ant next turn, <c>false</c> otherwise.</returns>
 		/// <seealso cref="GetIsUnoccupied"/>
 		public bool GetIsPassable (Location location) {
-            bool b = false;
-            foreach (AntHill hill in MyHills) {
-                b |= hill.Equals(location);
-            }
-            
-            return !b && map[location.Row, location.Col] != Tile.Water && myAntsTemp[location.Row, location.Col] == null;
+            return map[location.Row, location.Col] != Tile.Water;
 		}
 		
 		/// <summary>
@@ -219,7 +214,12 @@ namespace Ants {
 		/// <param name="location">The location to check.</param>
 		/// <returns><c>true</c> if the location is passable and does not contain an ant, <c>false</c> otherwise.</returns>
 		public bool GetIsUnoccupied (Location location) {
-			return GetIsPassable(location) && map[location.Row, location.Col] != Tile.Ant;
+            bool b = false;
+            foreach (AntHill hill in MyHills) {
+                b |= hill.Equals(location);
+            }
+
+			return !b && GetIsPassable(location) && map[location.Row, location.Col] != Tile.Ant && myAntsTemp[location.Row, location.Col] == null;
 		}
 		
 		/// <summary>
