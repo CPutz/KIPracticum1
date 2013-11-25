@@ -2,3 +2,7 @@ D:\Temp\aibot\your bot\bin\Debug\YourBot.exe
 D:\Temp\aibot\your bot\bin\Debug\YourBot.pdb
 D:\Temp\aibot\your bot\obj\x86\Debug\YourBot.exe
 D:\Temp\aibot\your bot\obj\x86\Debug\YourBot.pdb
+D:\GitProjects\KIPracticum1\b2ki\your bot\obj\x86\Debug\MyBot.exe
+D:\GitProjects\KIPracticum1\b2ki\your bot\obj\x86\Debug\MyBot.pdb
+D:\GitProjects\KIPracticum1\b2ki\your bot\bin\Debug\MyBot.exe
+D:\GitProjects\KIPracticum1\b2ki\your bot\bin\Debug\MyBot.pdb
