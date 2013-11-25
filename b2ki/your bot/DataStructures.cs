@@ -146,17 +146,20 @@ namespace Ants {
 
 
 
-    class LinkedList<T> : IEnumerable<T> {
+    class LinkedList<T> : IEnumerable<T>
+    {
         private LLElement<T> head;
         private LLElement<T> last;
 
         public int Size { get; private set; }
 
-        public LinkedList() {
+        public LinkedList()
+        {
             this.Size = 0;
         }
 
-        public void Add(T key) {
+        public void Add(T key)
+        {
             LLElement<T> k = new LLElement<T>(key);
             if (this.head != null)
                 this.last.Next = k;
@@ -188,10 +191,12 @@ namespace Ants {
             return false;
         }*/
 
-        public T Search(T key) {
+        public T Search(T key)
+        {
             LLElement<T> x = this.head;
 
-            while (x != null) {
+            while (x != null)
+            {
                 if (x.Value.Equals(key))
                     return x.Value;
 
@@ -201,16 +206,19 @@ namespace Ants {
             return default(T);
         }
 
-        public IEnumerator<T> GetEnumerator() {
+        public IEnumerator<T> GetEnumerator()
+        {
             LLElement<T> x = this.head;
 
-            while (x != null) {
+            while (x != null)
+            {
                 yield return x.Value;
                 x = x.Next;
             }
         }
 
-        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() {
+        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+        {
             return GetEnumerator();
         }
     }

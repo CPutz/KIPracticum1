@@ -10,6 +10,7 @@ namespace Ants {
 		
 		public int LoadTime { get; private set; }
 		public int TurnTime { get; private set; }
+        public int Turn { get; private set; }
 		
 		private DateTime turnStart;
 		public int TimeRemaining {
@@ -20,6 +21,7 @@ namespace Ants {
 		}
 
 		public int ViewRadius2 { get; private set; }
+        public int ViewRadiusRoot { get; private set; }
 		public int AttackRadius2 { get; private set; }
 		public int SpawnRadius2 { get; private set; }
 
@@ -31,8 +33,10 @@ namespace Ants {
 		public List<Location> FoodTiles { get; private set; }
 
         //keeps track of where all ants will be positioned in the next turn.
-        private int[,] myAntsTemp;
+        private Ant[,] myAntsTemp;
         private int antNumber;
+
+        public bool[,] VisibilityMap { get; private set; }
 
 		public Tile this[Location location] {
 			get { return this.map[location.Row, location.Col]; }
@@ -53,8 +57,10 @@ namespace Ants {
 			
 			LoadTime = loadtime;
 			TurnTime = turntime;
+            Turn = 0;
 			
 			ViewRadius2 = viewradius2;
+            ViewRadiusRoot = (int)Math.Floor(Math.Sqrt(this.ViewRadius2));
 			AttackRadius2 = attackradius2;
 			SpawnRadius2 = spawnradius2;
 			
@@ -65,8 +71,8 @@ namespace Ants {
 			DeadTiles = new List<Location>();
 			FoodTiles = new List<Location>();
 
-            myAntsTemp = new int[height, width];
-            antNumber = 1;
+            myAntsTemp = new Ant[height, width];
+            antNumber = 0;
 			
 			map = new Tile[height, width];
 			for (int row = 0; row < height; row++) {
@@ -74,6 +80,8 @@ namespace Ants {
 					map[row, col] = Tile.Land;
 				}
 			}
+
+            VisibilityMap = new bool[height, width];
 		}
 
 		#region State mutators
@@ -81,9 +89,7 @@ namespace Ants {
 			// start timer
 			turnStart = DateTime.Now;
 
-            //fill myAntsTemp data
-            myAntsTemp = new int[Height, Width];
-            foreach (Ant ant in MyAnts) myAntsTemp[ant.Row, ant.Col] = ant.AntNumber;
+            Turn++;
 
 			// clear ant data
 			foreach (Location loc in MyAnts) map[loc.Row, loc.Col] = Tile.Land;
@@ -103,17 +109,39 @@ namespace Ants {
 			FoodTiles.Clear();
 		}
 
+        //this method should every turn be called after all ants have been added to MyAn
+        public void UpdateTurn() {
+            myAntsTemp = new Ant[Height, Width];
+            //fill myAntsTemp data
+            foreach (Ant ant in MyAnts) myAntsTemp[ant.Row, ant.Col] = ant;
+        }
+
 		public void AddAnt (int row, int col, int team) {
 			map[row, col] = Tile.Ant;
             Ant ant;
             if (team == 0) {
-                if (myAntsTemp[row, col] != default(int)) {
-                    ant = new Ant(row, col, team, myAntsTemp[row, col]);
+                if (myAntsTemp[row, col] != null) {
+                    ant = myAntsTemp[row, col];
+                    ant.SetLocation(row, col);
                 } else {
                     ant = new Ant(row, col, team, antNumber);
                     antNumber++;
                 }
                 MyAnts.Add(ant);
+
+                //calculate visibility for ant
+                for (int r = -1 * ViewRadiusRoot; r <= ViewRadiusRoot; ++r) {
+                    for (int c = -1 * ViewRadiusRoot; c <= ViewRadiusRoot; ++c) {
+                        int square = r * r + c * c;
+                        if (square < this.ViewRadius2) {
+                            Location loc = GetDestination(ant, new Location(r, c));
+                            
+                            VisibilityMap[loc.Row, loc.Col] = true;
+
+                        }
+                    }
+                }
+
             } else {
                 ant = new Ant(row, col, team, 0);
                 EnemyAnts.Add(ant);
@@ -164,8 +192,8 @@ namespace Ants {
 
         public void MoveAnt(Ant ant, Direction direction) {
             Location newLoc = this.GetDestination(ant, direction);
-            myAntsTemp[newLoc.Row, newLoc.Col] = ant.AntNumber;
-            myAntsTemp[ant.Row, ant.Col] = default(int);
+            myAntsTemp[newLoc.Row, newLoc.Col] = ant;
+            myAntsTemp[ant.Row, ant.Col] = null;
         }
 
 		#endregion
@@ -176,8 +204,13 @@ namespace Ants {
 		/// <param name="location">The location to check.</param>
 		/// <returns><c>true</c> if the location is not water and there is no ant next turn, <c>false</c> otherwise.</returns>
 		/// <seealso cref="GetIsUnoccupied"/>
-		public bool GetIsPassable (Location location) { 
-			return map[location.Row, location.Col] != Tile.Water && myAntsTemp[location.Row, location.Col] == default(int);
+		public bool GetIsPassable (Location location) {
+            bool b = false;
+            foreach (AntHill hill in MyHills) {
+                b |= hill.Equals(location);
+            }
+            
+            return !b && map[location.Row, location.Col] != Tile.Water && myAntsTemp[location.Row, location.Col] == null;
 		}
 		
 		/// <summary>
@@ -206,6 +239,17 @@ namespace Ants {
 			
 			return new Location(row, col);
 		}
+
+        public Location GetDestination(Location location, Location direction) {
+
+            int row = (location.Row + direction.Row) % Height;
+            if (row < 0) row += Height; // because the modulo of a negative number is negative
+
+            int col = (location.Col + direction.Col) % Width;
+            if (col < 0) col += Width;
+
+            return new Location(row, col);
+        }
 
 		/// <summary>
 		/// Gets the distance between <paramref name="loc1"/> and <paramref name="loc2"/>.
@@ -264,10 +308,9 @@ namespace Ants {
 		public bool GetIsVisible(Location loc)
 		{
 			List<Location> offsets = new List<Location>();
-			int squares = (int)Math.Floor(Math.Sqrt(this.ViewRadius2));
-			for (int r = -1 * squares; r <= squares; ++r)
+            for (int r = -1 * ViewRadiusRoot; r <= ViewRadiusRoot; ++r)
 			{
-				for (int c = -1 * squares; c <= squares; ++c)
+                for (int c = -1 * ViewRadiusRoot; c <= ViewRadiusRoot; ++c)
 				{
 					int square = r * r + c * c;
 					if (square < this.ViewRadius2)

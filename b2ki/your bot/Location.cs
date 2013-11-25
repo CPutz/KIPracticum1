@@ -8,12 +8,12 @@ namespace Ants {
 		/// <summary>
 		/// Gets the row of this location.
 		/// </summary>
-		public int Row { get; private set; }
+		public int Row { get; protected set; }
 
 		/// <summary>
 		/// Gets the column of this location.
 		/// </summary>
-		public int Col { get; private set; }
+        public int Col { get; protected set; }
 
 		public Location (int row, int col) {
 			this.Row = row;
@@ -75,11 +75,17 @@ namespace Ants {
 	
 	public class Ant : TeamLocation, IEquatable<Ant> {
         public int AntNumber { get; private set; }
+        public Location Target { get; set; }
         public AntMode Mode { get; set; }
 
         public Ant (int row, int col, int team, int antNumber) : base (row, col, team) {
             this.AntNumber = antNumber;
 		}
+
+        public void SetLocation(int row, int col) {
+            this.Row = row;
+            this.Col = col;
+        }
 
 		public bool Equals (Ant other) {
 			return base.Equals (other);

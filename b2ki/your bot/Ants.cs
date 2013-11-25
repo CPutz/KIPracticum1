@@ -40,6 +40,7 @@ namespace Ants {
 					} else if (line.Equals(GO)) {
 						state.StartNewTurn();
 						ParseUpdate(input);
+                        state.UpdateTurn();
 						bot.DoTurn(state);
 						FinishTurn();
 						input.Clear();
