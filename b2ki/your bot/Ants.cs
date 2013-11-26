@@ -96,6 +96,7 @@ namespace Ants {
 			this.state = new GameState(width, height, 
 			                           turntime, loadtime, 
 			                           viewradius2, attackradius2, spawnradius2);
+
 		}
 		
 		// parse engine input and update the game state
