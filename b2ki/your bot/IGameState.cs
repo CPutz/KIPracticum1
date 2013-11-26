@@ -35,14 +35,19 @@ namespace Ants {
 		int ViewRadius2 { get; }
 
         /// <summary>
-        /// Squareroot of ViewRadius2 and rounded downward.
+        /// Gets the squareroot of ViewRadius2 as integer.
         /// </summary>
-        int ViewRadiusRoot { get; }
+        int ViewRadius { get; }
 
 		/// <summary>
 		/// Gets the ant attack range radius squared.
 		/// </summary>
 		int AttackRadius2 { get; }
+
+        /// <summary>
+        /// Gets the squareroot of AttackRadius2 as integer.
+        /// </summary>
+        int AttackRadius { get; }
 
 		/// <summary>
 		/// Gets the ant hill spawn radius squared.
@@ -85,9 +90,14 @@ namespace Ants {
 		List<Location> FoodTiles { get; }
 
         /// <summary>
-        /// 
+        /// Gets whether a location is visible or not.
         /// </summary>
         bool[,] VisibilityMap { get; }
+
+        /// <summary>
+        /// Gets whether a location contains an enemy.
+        /// </summary>
+        bool[,] EnemyMap { get; }
 
 		/// <summary>
 		/// Gets the <see cref="Tile"/> for the <paramref name="location"/>.
@@ -121,6 +131,14 @@ namespace Ants {
 		/// <param name="direction">The direction to move.</param>
 		/// <returns>The new location, accounting for wrap around.</returns>
 		Location GetDestination (Location location, Direction direction);
+
+        /// <summary>
+        /// Gets the destination if an ant at <paramref name="location"/> goes in <paramref name="direction"/>, accounting for wrap around.
+        /// </summary>
+        /// <param name="location">The starting location.</param>
+        /// <param name="direction">The direction to move.</param>
+        /// <returns>The new location, accounting for wrap around.</returns>
+        Location GetDestination(Location location, Location direction);
 
 		/// <summary>
 		/// Gets the distance between <paramref name="loc1"/> and <paramref name="loc2"/>.
