@@ -53,8 +53,8 @@ namespace Ants {
                     }
                 }
 
-                if (state.TimeRemaining < 1000) 
-                    break;
+                //if (state.TimeRemaining < 10) 
+                //    break;
             }
 
 
