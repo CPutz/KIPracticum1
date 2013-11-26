@@ -76,10 +76,14 @@ namespace Ants {
 	public class Ant : TeamLocation, IEquatable<Ant> {
         public int AntNumber { get; private set; }
         public Location Target { get; set; }
+        public List<Location> Route { get; set; }
         public AntMode Mode { get; set; }
+
+        public int IsWaitingFor { get; set; }
 
         public Ant (int row, int col, int team, int antNumber) : base (row, col, team) {
             this.AntNumber = antNumber;
+            this.IsWaitingFor = 0;
 		}
 
         public void SetLocation(int row, int col) {

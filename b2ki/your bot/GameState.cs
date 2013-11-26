@@ -107,6 +107,9 @@ namespace Ants {
 			// set all known food to unseen
 			foreach (Location loc in FoodTiles) map[loc.Row, loc.Col] = Tile.Land;
 			FoodTiles.Clear();
+
+            // clear visibilitymap
+            VisibilityMap = new bool[Height, Width];
 		}
 
         //this method should every turn be called after all ants have been added to MyAn

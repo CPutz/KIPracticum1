@@ -13,7 +13,7 @@ namespace Ants {
             for (int row = 0; row < state.Height; ++row) {
                 for (int col = 0; col < state.Width; ++col) {
                     Location location = new Location(row, col);
-                    if (state.GetIsUnoccupied(location)) { //&& !state.VisibilityMap[row, col]) {
+                    if (state.GetIsUnoccupied(location) && !state.VisibilityMap[row, col]) {
                         ExplorableTiles.Add(location);
                     }
                 }
@@ -25,18 +25,51 @@ namespace Ants {
 
             foreach (Ant ant in state.MyAnts) {
 
-                List<Location> path;
-
-                while ((path = s.AStar(ant, ant.Target)) == null || path.Count == 1) {
-                //if (ant.Target == null) {
-                    ant.Target = ExplorableTiles[rand.Next(0, ExplorableTiles.Count)];
+                if (ant.Equals(ant.Target)) {
+                    ant.Target = null;
+                    ant.Route = null;
                 }
+
+                if (ant.Route == null || ant.IsWaitingFor > 3) {
+                    if (ExplorableTiles.Count > 0)
+                        ant.Target = ExplorableTiles[rand.Next(ExplorableTiles.Count)];
+                    ant.Route = s.AStar(ant, ant.Target);
+                }
+
+                if ((ant.Route != null && !state.GetIsPassable(ant.Route[1]))) {
+                    if (ExplorableTiles.Count > 0)
+                        ant.Target = ExplorableTiles[rand.Next(ExplorableTiles.Count)];
+                    ant.Route = s.AStar(ant, ant.Target);
+                }
+
                 //path = s.AStar(ant, ant.Target);
+                if (ant.Route != null && ant.Route.Count > 1) {
+                    if (!state.GetIsUnoccupied(ant.Route[1])) {
+                        ant.IsWaitingFor++;
+                    } else {
+                        IssueOrder(state, ant, DirectionFromPath(ant.Route, state));
+                        ant.Route.RemoveAt(0); //ghetto
+                        ant.IsWaitingFor = 0;
+                    }
+                }
 
-                IssueOrder(state, ant, DirectionFromPath(path, state));
-
-                if (state.TimeRemaining < 1000) break;
+                if (state.TimeRemaining < 1000) 
+                    break;
             }
+
+
+            //testing
+            /*for (int i = 0; i < state.MyAnts.Count; ++i) {
+                Ant ant = state.MyAnts[i];
+                if (ant.AntNumber < state.FoodTiles.Count) {
+                    ant.Target = state.FoodTiles[ant.AntNumber];
+                    List<Location>  path = s.AStar(ant, ant.Target);
+                    IssueOrder(state, ant, DirectionFromPath(path, state));
+                } else {
+                    if (state.GetIsUnoccupied(state.GetDestination(ant, Direction.East)))
+                        IssueOrder(state, ant, Direction.East);
+                }
+            }*/
 		}
 
         private Location GetFogTarget(IGameState state, Random rand) {
