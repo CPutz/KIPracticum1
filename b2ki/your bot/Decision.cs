@@ -31,11 +31,10 @@ namespace Ants {
         public void Update(IGameState state) {
             float x, y, z;
 
-            //extremely slow!
             int fog = 0;
             for (int row = 0; row < state.Height; ++row) {
                 for (int col = 0; col < state.Width; ++col) {
-                    if (!state.GetIsVisible(new Location(row, col))) {
+                    if (!state.VisibilityMap[row, col]) {
                         fog++;
                     }
                 }
