@@ -29,9 +29,9 @@ namespace Ants {
 		public List<Ant> MyAnts { get; private set; }
 		public List<AntHill> MyHills { get; private set; }
 		public List<Ant> EnemyAnts { get; private set; }
-		public List<AntHill> EnemyHills { get; private set; }
+		public Map<AntHill> EnemyHills { get; private set; }
 		public List<Location> DeadTiles { get; private set; }
-		public List<Location> FoodTiles { get; private set; }
+		public Map<Location> FoodTiles { get; private set; }
 
         //keeps track of where all ants will be positioned in the next turn.
         private Ant[,] myAntsTemp;
@@ -39,6 +39,7 @@ namespace Ants {
 
         public bool[,] VisibilityMap { get; private set; }
         public bool[,] EnemyMap { get; private set; }
+        public bool[,] FoodMap { get; private set; }
 
 		public Tile this[Location location] {
 			get { return this.map[location.Row, location.Col]; }
@@ -70,9 +71,9 @@ namespace Ants {
 			MyAnts = new List<Ant>();
 			MyHills = new List<AntHill>();
 			EnemyAnts = new List<Ant>();
-			EnemyHills = new List<AntHill>();
+			EnemyHills = new Map<AntHill>(Width, Height);
 			DeadTiles = new List<Location>();
-			FoodTiles = new List<Location>();
+			FoodTiles = new Map<Location>(Width, Height);
 
             myAntsTemp = new Ant[Height, Width];
             antNumber = 0;
@@ -86,6 +87,7 @@ namespace Ants {
 
             VisibilityMap = new bool[Height, Width];
             EnemyMap = new bool[Height, Width];
+            FoodMap = new bool[Height, Width];
 		}
 
 		#region State mutators
@@ -112,9 +114,10 @@ namespace Ants {
 			foreach (Location loc in FoodTiles) map[loc.Row, loc.Col] = Tile.Land;
 			FoodTiles.Clear();
 
-            // clear visibilitymap and enemymap
+            // clear maps
             VisibilityMap = new bool[Height, Width];
             EnemyMap = new bool[Height, Width];
+            FoodMap = new bool[Height, Width];
 		}
 
         //this method should every turn be called after all ants have been added to MyAn
@@ -162,6 +165,7 @@ namespace Ants {
 		public void AddFood (int row, int col) {
 			map[row, col] = Tile.Food;
 			FoodTiles.Add(new Location(row, col));
+            FoodMap[row, col] = true;
 		}
 
 		public void RemoveFood (int row, int col) {

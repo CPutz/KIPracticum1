@@ -77,7 +77,7 @@ namespace Ants {
 		/// <summary>
 		/// Gets a list of currently visible enemy hills.
 		/// </summary>
-		List<AntHill> EnemyHills { get; }
+		Map<AntHill> EnemyHills { get; }
 
 		/// <summary>
 		/// Gets a list of currently-visible locations where ants died last turn.
@@ -87,7 +87,7 @@ namespace Ants {
 		/// <summary>
 		/// Gets a list of food tiles visible this turn.
 		/// </summary>
-		List<Location> FoodTiles { get; }
+		Map<Location> FoodTiles { get; }
 
         /// <summary>
         /// Gets whether a location is visible or not.
@@ -97,7 +97,9 @@ namespace Ants {
         /// <summary>
         /// Gets whether a location contains an enemy.
         /// </summary>
-        bool[,] EnemyMap { get; }
+        //bool[,] EnemyMap { get; }
+
+        //bool[,] FoodMap { get; }
 
 		/// <summary>
 		/// Gets the <see cref="Tile"/> for the <paramref name="location"/>.
