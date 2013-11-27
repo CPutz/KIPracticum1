@@ -28,7 +28,7 @@ namespace Ants {
 
 		public List<Ant> MyAnts { get; private set; }
 		public List<AntHill> MyHills { get; private set; }
-		public List<Ant> EnemyAnts { get; private set; }
+		public Map<Ant> EnemyAnts { get; private set; }
 		public Map<AntHill> EnemyHills { get; private set; }
 		public List<Location> DeadTiles { get; private set; }
 		public Map<Location> FoodTiles { get; private set; }
@@ -38,8 +38,6 @@ namespace Ants {
         private int antNumber;
 
         public bool[,] VisibilityMap { get; private set; }
-        public bool[,] EnemyMap { get; private set; }
-        public bool[,] FoodMap { get; private set; }
 
 		public Tile this[Location location] {
 			get { return this.map[location.Row, location.Col]; }
@@ -70,7 +68,7 @@ namespace Ants {
 			
 			MyAnts = new List<Ant>();
 			MyHills = new List<AntHill>();
-			EnemyAnts = new List<Ant>();
+			EnemyAnts = new Map<Ant>(Width, Height);
 			EnemyHills = new Map<AntHill>(Width, Height);
 			DeadTiles = new List<Location>();
 			FoodTiles = new Map<Location>(Width, Height);
@@ -86,8 +84,6 @@ namespace Ants {
 			}
 
             VisibilityMap = new bool[Height, Width];
-            EnemyMap = new bool[Height, Width];
-            FoodMap = new bool[Height, Width];
 		}
 
 		#region State mutators
@@ -116,8 +112,6 @@ namespace Ants {
 
             // clear maps
             VisibilityMap = new bool[Height, Width];
-            EnemyMap = new bool[Height, Width];
-            FoodMap = new bool[Height, Width];
 		}
 
         //this method should every turn be called after all ants have been added to MyAn
@@ -156,16 +150,12 @@ namespace Ants {
             } else {
                 ant = new Ant(row, col, team, 0);
                 EnemyAnts.Add(ant);
-
-                //add enemy location to enemymap
-                EnemyMap[ant.Row, ant.Col] = true;
             }
 		}
 
 		public void AddFood (int row, int col) {
 			map[row, col] = Tile.Food;
 			FoodTiles.Add(new Location(row, col));
-            FoodMap[row, col] = true;
 		}
 
 		public void RemoveFood (int row, int col) {

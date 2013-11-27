@@ -72,7 +72,7 @@ namespace Ants {
 		/// <summary>
 		/// Gets a list of currently visible enemy ants.
 		/// </summary>
-		List<Ant> EnemyAnts { get; }
+		Map<Ant> EnemyAnts { get; }
 
 		/// <summary>
 		/// Gets a list of currently visible enemy hills.

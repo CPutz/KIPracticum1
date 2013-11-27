@@ -73,6 +73,7 @@ namespace Ants {
                     List<Location> path = s.AStar(ant, location);
                     IssueOrder(state, ant, DirectionFromPath(path, state));
                 } else {
+
                     if (ant.Equals(ant.Target)) {
                         ant.Target = null;
                         ant.Route = null;
@@ -91,48 +92,13 @@ namespace Ants {
                     }
 
                     if (ant.Route != null && ant.Route.Count > 1) {
+
                         if (!state.GetIsUnoccupied(ant.Route[1])) {
                             ant.IsWaitingFor++;
                         } else {
-
-
-
-                            //check whether ant is too close to enemy
-                            bool tooClose = false;
-                            bool retreat = false;
-                            /*int closeRadius2 = (state.AttackRadius + 2) * (state.AttackRadius + 2);
-                            int retreatRadius2 = (state.AttackRadius + 1) * (state.AttackRadius + 1);
-                            int closeRadius = (int)Math.Sqrt(closeRadius2);
-                            Direction retreatDirection = 0;
-
-                            for (int r = -1 * closeRadius; r <= closeRadius; ++r) {
-                                for (int c = -1 * closeRadius; c <= closeRadius; ++c) {
-                                    int square = r * r + c * c;
-                                    if (square <= closeRadius2) {
-                                        Location loc = state.GetDestination(ant.Route[1], new Location(r, c));
-
-                                        //add visible locations to visibilitymap
-                                        if (state.EnemyMap[loc.Row, loc.Col]) {
-                                            tooClose = true;
-
-                                            if (square <= retreatRadius2) {
-                                                retreat = true;
-                                                retreatDirection = new List<Direction>(state.GetDirections(ant, loc))[0];
-                                            }
-                                        }
-                                    }
-                                }
-                            }*/
-
                             IssueOrder(state, ant, DirectionFromPath(ant.Route, state));
                             ant.Route.RemoveAt(0); //ghetto
                             ant.IsWaitingFor = 0;
-
-                            /*else if (retreat) {
-                                if (state.GetIsUnoccupied(state.GetDestination(ant, retreatDirection))) {
-                                    IssueOrder(state, ant, retreatDirection);
-                                }
-                            }*/
                         }
                     }
                 }
