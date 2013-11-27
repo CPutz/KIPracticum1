@@ -3,6 +3,9 @@ using System.Collections.Generic;
 
 namespace Ants {
 
+    /// <summary>
+    /// Just a List for Locations that is extended with a boolean map for a fast Contains function.
+    /// </summary>
     public class Map<T> : IEnumerable<T> where T : Location {
         public int Width { get; private set; }
         public int Height { get; private set; }
@@ -27,8 +30,12 @@ namespace Ants {
         }
 
         public void Add(T item) {
-            map[item.Row, item.Col] = true;
-            items.Add(item);
+            if (!map[item.Row, item.Col]) {
+                map[item.Row, item.Col] = true;
+                items.Add(item);
+            } else {
+                throw new ArgumentException("There already exists an element with this Location");
+            }
         }
 
         public void Remove(T item) {
