@@ -224,7 +224,7 @@ namespace Ants {
                 b |= hill.Equals(location);
             }
 
-			return !b && GetIsPassable(location) && map[location.Row, location.Col] != Tile.Ant && myAntsTemp[location.Row, location.Col] == null;
+			return !b && GetIsPassable(location) && myAntsTemp[location.Row, location.Col] == null;
 		}
 		
 		/// <summary>

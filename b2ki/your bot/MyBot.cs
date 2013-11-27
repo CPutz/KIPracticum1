@@ -5,33 +5,25 @@ namespace Ants {
 
 	class MyBot : Bot {
 
-        private DecisionMaker dicisionMaker;
+        private DecisionMaker decisionMaker;
 
         public MyBot() {
-            this.dicisionMaker = new DecisionMaker();
+            this.decisionMaker = new DecisionMaker();
         }
 
 
 		// DoTurn is run once per turn
 		public override void DoTurn (IGameState state) {
+            this.decisionMaker.Update(state);
 
-
-            List<Location> ExplorableTiles = new List<Location>();
-            for (int row = 0; row < state.Height; ++row) {
-                for (int col = 0; col < state.Width; ++col) {
-                    Location location = new Location(row, col);
-                    if (state.GetIsUnoccupied(location) && !state.VisibilityMap[row, col]) {
-                        ExplorableTiles.Add(location);
-                    }
-                }
-            }
-
-
-            Random rand = new Random();
+            
             Search s = new Search(state, state.GetDistance);
 
             foreach (Ant ant in state.MyAnts) {
 
+                if (ant.Mode == AntMode.None) {
+                    ant.Mode = this.decisionMaker.GetAntMode();
+                }
 
                 bool getFood = false;
                 bool getHill = false;
@@ -48,7 +40,7 @@ namespace Ants {
                         if (square <= foodRadius2) {
                             Location loc = state.GetDestination(ant, new Location(r, c));
 
-                            if (state.EnemyHills.Contains(loc)) {
+                            /*if (state.EnemyHills.Contains(loc)) {
                                 int tempDistance = state.GetDistance(ant, loc);
                                 if (!getHill || tempDistance < distance) {
                                     location = loc;
@@ -56,7 +48,7 @@ namespace Ants {
 
                                 getHill = true;
 
-                            } else if (state.FoodTiles.Contains(loc) && !getHill) {
+                            } else*/ if (state.FoodTiles.Contains(loc) && !getHill) {
                                 int tempDistance = state.GetDistance(ant, loc);
 
                                 if (tempDistance < distance) {
@@ -80,14 +72,13 @@ namespace Ants {
                     }
 
                     if (ant.Route == null || ant.IsWaitingFor > 3) {
-                        if (ExplorableTiles.Count > 0)
-                            ant.Target = ExplorableTiles[rand.Next(ExplorableTiles.Count)];
+                        ant.Target = decisionMaker.GetTarget(ant);
                         ant.Route = s.AStar(ant, ant.Target);
                     }
 
+                    //IDEA: check whether route is ok for next k locations (k=10 for example).
                     if ((ant.Route != null && ant.Route.Count > 1 && !state.GetIsPassable(ant.Route[1]))) {
-                        if (ExplorableTiles.Count > 0)
-                            ant.Target = ExplorableTiles[rand.Next(ExplorableTiles.Count)];
+                        ant.Target = decisionMaker.GetTarget(ant);
                         ant.Route = s.AStar(ant, ant.Target);
                     }
 

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 
 namespace Ants {
-    public enum AntMode { Explore, Attack, Defend };
+    public enum AntMode { None, Explore, Attack, Defend };
 
     class DecisionMaker {
 
@@ -13,11 +13,18 @@ namespace Ants {
 
         //private IGameState state;
         private List<Location> targets;
+        private List<Location> explorableTiles;
+
+        private Location target;
+
+        private Random random;
 
         private float px, py, pz;
 
         public DecisionMaker() {
             this.targets = new List<Location>();
+            this.explorableTiles = new List<Location>();
+            this.random = new Random();
         }
 
         public void AddTarget(Location target) {
@@ -50,9 +57,35 @@ namespace Ants {
 
             float sum = x + y + z;
 
+            if (py > 0) {
+                int test = 2;
+            }
+
             this.px = x / sum;
             this.py = y / sum;
             this.pz = z / sum;
+
+            //check for new enemyhills
+            foreach (AntHill hill in state.EnemyHills) {
+                if (!targets.Contains(hill)) {
+                    targets.Add(hill);
+                }
+            }
+
+            //calculate the explorable tiles
+            for (int row = 0; row < state.Height; ++row) {
+                for (int col = 0; col < state.Width; ++col) {
+                    Location location = new Location(row, col);
+                    if (state.GetIsUnoccupied(location) && !state.VisibilityMap[row, col]) {
+                        explorableTiles.Add(location);
+                    }
+                }
+            }
+
+            //choose target
+            if (target == null && targets.Count > 1) {
+                target = targets[0];
+            }
         }
 
 
@@ -61,10 +94,28 @@ namespace Ants {
             double num = rand.NextDouble();
             if (num <= px)
                 return AntMode.Explore;
-            else if (num <= py)
+            else if (num <= px + py)
                 return AntMode.Attack;
             else
                 return AntMode.Defend;
+        }
+
+
+        public Location GetTarget(Ant ant) {
+            switch (ant.Mode) {
+                case AntMode.Explore:
+                    if (explorableTiles.Count > 0) {
+                        return explorableTiles[random.Next(explorableTiles.Count)];
+                    }
+                    break;
+                case AntMode.Attack:
+                    if (target != null) {
+                        return target;
+                    }
+                    break;
+            }
+
+            return ant;
         }
     }
 }
