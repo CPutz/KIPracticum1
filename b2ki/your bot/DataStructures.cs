@@ -170,16 +170,20 @@ namespace Ants {
             this.Size++;
         }
 
-        /*public bool Remove(T key) {
+        public bool Remove(T key) {
             LLElement<T> x = head;
             LLElement<T> prev = null;
 
             while (x != null) {
                 if (x.Value.Equals(key)) {
-                    if (prev != null)
+                    if (prev != null) {
                         prev.Next = x.Next;
-                    else
+                    } else {
                         head = x.Next;
+                    }
+                    if (x == last) {
+                        last = prev;
+                    } 
 
                     return true;
                 }
@@ -189,7 +193,7 @@ namespace Ants {
             }
 
             return false;
-        }*/
+        }
 
         public T Search(T key)
         {

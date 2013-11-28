@@ -22,11 +22,6 @@ namespace Ants {
             foreach (Ant ant in state.MyAnts) {
                 ant.IsWaitingFor++;
 
-                if (ant.Col == 0 || ant.Col == 71 || ant.Col == 70) {
-
-                }
-
-
                 if (ant.Mode == AntMode.None) {
                     ant.Mode = this.decision.GetAntMode();
                 }
@@ -90,7 +85,7 @@ namespace Ants {
                         ant.Route = null;
                     }
 
-                    if (ant.Route == null || ant.Target == null || ant.IsWaitingFor > 1) {
+                    if (ant.Target == null || ant.Route == null || ant.IsWaitingFor > 1) {
                         ant.Target = decision.GetTarget(ant);
                         ant.Route = s.AStar(ant, ant.Target);
                     }
@@ -114,18 +109,6 @@ namespace Ants {
                 //    break;
             }
 		}
-
-        private Location GetFogTarget(IGameState state, Random rand) {
-            Location location;
-
-            //do {
-                int row = rand.Next(0, state.Height);
-                int col = rand.Next(0, state.Width);
-                location = new Location(row, col);
-            //} while (state.GetIsVisible(location));
-
-            return location;
-        }
 
 
         private Direction DirectionFromPath(List<Location> path, IGameState state) {
