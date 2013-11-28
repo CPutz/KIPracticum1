@@ -20,7 +20,7 @@ namespace Ants {
             Search s = new Search(state, state.GetDistance);
 
             foreach (Ant ant in state.MyAnts) {
-
+                ant.IsWaitingFor++;
 
                 if (ant.Col == 0 || ant.Col == 71 || ant.Col == 70) {
 
@@ -90,7 +90,7 @@ namespace Ants {
                         ant.Route = null;
                     }
 
-                    if (ant.Route == null || ant.Target == null || ant.IsWaitingFor > 0) {
+                    if (ant.Route == null || ant.Target == null || ant.IsWaitingFor > 1) {
                         ant.Target = decision.GetTarget(ant);
                         ant.Route = s.AStar(ant, ant.Target);
                     }
@@ -103,12 +103,9 @@ namespace Ants {
 
                     if (ant.Route != null && ant.Route.Count > 1) {
 
-                        if (!state.GetIsUnoccupied(ant.Route[1])) {
-                            ant.IsWaitingFor++;
-                        } else {
+                        if (state.GetIsUnoccupied(ant.Route[1])) {
                             IssueOrder(state, ant, DirectionFromPath(ant.Route, state));
                             ant.Route.RemoveAt(0); //ghetto
-                            ant.IsWaitingFor = 0;
                         }
                     }
                 }
