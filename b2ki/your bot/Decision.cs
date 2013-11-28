@@ -57,10 +57,6 @@ namespace Ants {
 
             float sum = x + y + z;
 
-            if (py > 0) {
-                int test = 2;
-            }
-
             this.px = x / sum;
             this.py = y / sum;
             this.pz = z / sum;
@@ -82,16 +78,35 @@ namespace Ants {
                 }
             }
 
-            //choose target
-            if (target == null && targets.Count > 1) {
+            //check whether target is reached
+            List<Location> toRemove = new List<Location>();
+            foreach (Ant ant in state.MyAnts) {
+                foreach (Location t in targets) {
+                    if (ant.Equals(t)) {
+                        if (targets.Contains(t)) {
+                            toRemove.Add(t);
+                        }
+                        if (target.Equals(t)) {
+                            target = null;
+                        }
+                    }
+                }
+            }
+            foreach (Location loc in toRemove) {
+                targets.Remove(loc);
+            }
+
+            //choose new target
+            if (target == null && targets.Count != 0) {
                 target = targets[0];
             }
         }
 
 
         public AntMode GetAntMode() {
-            Random rand = new Random();
-            double num = rand.NextDouble();
+            return AntMode.Attack;
+
+            double num = random.NextDouble();
             if (num <= px)
                 return AntMode.Explore;
             else if (num <= px + py)
@@ -111,6 +126,8 @@ namespace Ants {
                 case AntMode.Attack:
                     if (target != null) {
                         return target;
+                    } else if (explorableTiles.Count > 0) {
+                        return explorableTiles[random.Next(explorableTiles.Count)];
                     }
                     break;
             }
