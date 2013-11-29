@@ -92,6 +92,17 @@ namespace Ants {
             this.Col = col;
         }
 
+        public override bool Equals(object obj) {
+            if (ReferenceEquals(null, obj))
+                return false;
+            if (ReferenceEquals(this, obj))
+                return true;
+            if (obj.GetType() != typeof(Ant))
+                return false;
+
+            return Equals((Ant)obj);
+        }
+
 		public bool Equals (Ant other) {
 			return base.Equals (other);
 		}

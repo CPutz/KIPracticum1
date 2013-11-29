@@ -104,8 +104,6 @@ namespace Ants {
 
 
         public AntMode GetAntMode() {
-            return AntMode.Attack;
-
             double num = random.NextDouble();
             if (num <= px)
                 return AntMode.Explore;

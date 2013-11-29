@@ -30,7 +30,8 @@ namespace Ants {
 		public List<AntHill> MyHills { get; private set; }
 		public Map<Ant> EnemyAnts { get; private set; }
 		public Map<AntHill> EnemyHills { get; private set; }
-		public List<Location> DeadTiles { get; private set; }
+        public List<Location> MyDeads { get; private set; }
+		public List<Location> EnemyDeads { get; private set; }
 		public Map<Location> FoodTiles { get; private set; }
 
         //keeps track of where all ants will be positioned in the next turn.
@@ -70,7 +71,8 @@ namespace Ants {
 			MyHills = new List<AntHill>();
 			EnemyAnts = new Map<Ant>(Width, Height);
 			EnemyHills = new Map<AntHill>(Width, Height);
-			DeadTiles = new List<Location>();
+			MyDeads = new List<Location>();
+            EnemyDeads = new List<Location>();
 			FoodTiles = new Map<Location>(Width, Height);
 
             myAntsTemp = new Ant[Height, Width];
@@ -98,13 +100,15 @@ namespace Ants {
 			foreach (Location loc in MyHills) map[loc.Row, loc.Col] = Tile.Land;
 			foreach (Location loc in EnemyAnts) map[loc.Row, loc.Col] = Tile.Land;
 			foreach (Location loc in EnemyHills) map[loc.Row, loc.Col] = Tile.Land;
-			foreach (Location loc in DeadTiles) map[loc.Row, loc.Col] = Tile.Land;
+			foreach (Location loc in MyDeads) map[loc.Row, loc.Col] = Tile.Land;
+            foreach (Location loc in EnemyDeads) map[loc.Row, loc.Col] = Tile.Land;
 
 			MyHills.Clear();
 			MyAnts.Clear();
 			EnemyHills.Clear();
 			EnemyAnts.Clear();
-			DeadTiles.Clear();
+            MyDeads.Clear();
+            EnemyDeads.Clear();
 			
 			// set all known food to unseen
 			foreach (Location loc in FoodTiles) map[loc.Row, loc.Col] = Tile.Land;
@@ -114,7 +118,7 @@ namespace Ants {
             VisibilityMap = new bool[Height, Width];
 		}
 
-        //this method should every turn be called after all ants have been added to MyAn
+        //this method should every turn be called after all ants have been added to MyAnts
         public void UpdateTurn() {
             myAntsTemp = new Ant[Height, Width];
             //fill myAntsTemp data
@@ -171,7 +175,7 @@ namespace Ants {
 			map[row, col] = Tile.Water;
 		}
 
-		public void DeadAnt (int row, int col) {
+		public void DeadAnt (int row, int col, int team) {
 			// food could spawn on a spot where an ant just died
 			// don't overwrite the space unless it is land
 			if (map[row, col] == Tile.Land) {
@@ -179,7 +183,11 @@ namespace Ants {
 			}
 			
 			// but always add to the dead list
-			DeadTiles.Add(new Location(row, col));
+            if (team == 0) {
+                MyDeads.Add(new Location(row, col));
+            } else {
+                EnemyDeads.Add(new Location(row, col));
+            }
 		}
 
 		public void AntHill (int row, int col, int team) {

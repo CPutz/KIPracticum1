@@ -121,9 +121,9 @@ namespace Ants {
 					} else if (tokens[0].Equals("w")) {
 						state.AddWater(row, col);
 					} else if (tokens[0].Equals("d")) {
-						state.DeadAnt(row, col);
+						state.DeadAnt(row, col, int.Parse(tokens[3]));
 					} else if (tokens[0].Equals("h")) {
-						state.AntHill (row, col, int.Parse(tokens[3]));
+						state.AntHill(row, col, int.Parse(tokens[3]));
 					}
 				}
 			}
