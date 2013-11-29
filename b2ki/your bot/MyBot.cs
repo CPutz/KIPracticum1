@@ -15,13 +15,13 @@ namespace Ants {
         //Formation formation;
 
 
-
 		// DoTurn is run once per turn
 		public override void DoTurn (IGameState state) {
             this.decision.Update(state);
 
             
-            Search s = new Search(state, state.GetDistance);
+            Search search = new Search(state, state.GetDistance, state.GetIsUnoccupied);
+            Search transparentSearch = new Search(state, state.GetDistance, state.GetIsPassable);
 
             /*foreach (Location loc in state.MyDeads) {
                 Ant ant = new Ant(loc.Row, loc.Col, 0, 0); //ghetto!!!
@@ -70,6 +70,7 @@ namespace Ants {
             foreach (Ant ant in state.MyAnts) {
                 ant.IsWaitingFor++;
 
+
                 if (ant.Mode == AntMode.None) {
                     ant.Mode = this.decision.GetAntMode();
                 }
@@ -84,92 +85,99 @@ namespace Ants {
 
                 if (ant.Mode != AntMode.Attack) {*/
 
+                Location location = GetFoodHillTarget(ant, state);
 
+                if (location != null) {
+                    List<Location> path = search.AStar(ant, location);
 
-                    bool getFood = false;
-                    bool getHill = false;
-
-                    int distance = int.MaxValue;
-                    Location location = ant;
-
-                    int foodRadius2;
-                    int foodRadius;
-
-                    if (ant.Mode == AntMode.Attack) {
-                        foodRadius2 = state.ViewRadius2 / 4;
-                        foodRadius = state.ViewRadius / 2;
+                    if (path != null && path.Count > 1 && state.GetIsUnoccupied(path[1])) {
+                        IssueOrder(state, ant, DirectionFromPath(path, state));
                     } else {
-                        foodRadius2 = state.ViewRadius2;
-                        foodRadius = state.ViewRadius;
+                        location = null;
+                    }
+                } 
+                if (location == null) {
+
+                    if (ant.Equals(ant.Target)) {
+                        ant.Target = null;
+                        ant.Route = null;
                     }
 
-                    for (int r = -1 * foodRadius; r <= foodRadius; ++r) {
-                        for (int c = -1 * foodRadius; c <= foodRadius; ++c) {
-                            int square = r * r + c * c;
-                            if (square <= foodRadius2) {
-                                Location loc = state.GetDestination(ant, new Location(r, c));
-
-                                if (state.EnemyHills.Contains(loc)) {
-                                    int tempDistance = state.GetDistance(ant, loc);
-                                    if (!getHill || tempDistance < distance) {
-                                        location = loc;
-                                    }
-
-                                    getHill = true;
-
-                                } else if (state.FoodTiles.Contains(loc) && !getHill) {
-                                    int tempDistance = state.GetDistance(ant, loc);
-
-                                    if (tempDistance < distance) {
-                                        distance = tempDistance;
-                                        location = loc;
-                                    }
-                                    getFood = true;
-                                }
-                            }
-                        }
+                    if (ant.Target == null || ant.Route == null || ant.IsWaitingFor > 1) {
+                        ant.Target = decision.GetTarget(ant);
+                        ant.Route = search.AStar(ant, ant.Target);
                     }
 
-                    if (getFood || getHill) {
-                        if (state.GetIsUnoccupied(location)) {
-                            List<Location> path = s.AStar(ant, location);
-                            IssueOrder(state, ant, DirectionFromPath(path, state));
-                        } else {
-                            getFood = false;
-                            getHill = false;
-                        }
-                    } else if (!getHill && !getFood) {
+                    if (ant.Route == null) {
+                        ant.Route = transparentSearch.AStar(ant, ant.Target);
+                    }
 
-                        if (ant.Equals(ant.Target)) {
-                            ant.Target = null;
-                            ant.Route = null;
-                        }
+                    //IDEA: check whether route is ok for next k locations (k=10 for example).
+                    if ((ant.Route != null && ant.Route.Count > 1 && !state.GetIsPassable(ant.Route[1]))) {
+                        ant.Target = decision.GetTarget(ant);
+                        ant.Route = search.AStar(ant, ant.Target);
+                    }
 
-                        if (ant.Target == null || ant.Route == null || ant.IsWaitingFor > 1) {
-                            ant.Target = decision.GetTarget(ant);
-                            ant.Route = s.AStar(ant, ant.Target);
-                        }
-
-                        //IDEA: check whether route is ok for next k locations (k=10 for example).
-                        if ((ant.Route != null && ant.Route.Count > 1 && !state.GetIsPassable(ant.Route[1]))) {
-                            ant.Target = decision.GetTarget(ant);
-                            ant.Route = s.AStar(ant, ant.Target);
-                        }
-
-                        if (ant.Route != null && ant.Route.Count > 1) {
-
-                            if (state.GetIsUnoccupied(ant.Route[1])) {
-                                IssueOrder(state, ant, DirectionFromPath(ant.Route, state));
-                                ant.Route.RemoveAt(0); //ghetto
-                            }
+                    if (ant.Route != null && ant.Route.Count > 1) {
+                        if (state.GetIsUnoccupied(ant.Route[1])) {
+                            IssueOrder(state, ant, DirectionFromPath(ant.Route, state));
+                            ant.Route.RemoveAt(0); //ghetto
                         }
                     }
+                }
                 //}
 
                 //if (state.TimeRemaining < 10) 
                 //    break;
             }
 		}
+
+
+        private Location GetFoodHillTarget(Ant ant, IGameState state) {
+            int distance = int.MaxValue;
+            Location location = null;
+
+            bool getHill = false;
+
+            int foodRadius2;
+            int foodRadius;
+
+            if (ant.Mode == AntMode.Attack) {
+                foodRadius2 = state.ViewRadius2 / 4;
+                foodRadius = state.ViewRadius / 2;
+            } else {
+                foodRadius2 = state.ViewRadius2;
+                foodRadius = state.ViewRadius;
+            }
+
+            for (int r = -1 * foodRadius; r <= foodRadius; ++r) {
+                for (int c = -1 * foodRadius; c <= foodRadius; ++c) {
+                    int square = r * r + c * c;
+                    if (square <= foodRadius2) {
+                        Location loc = state.GetDestination(ant, new Location(r, c));
+
+                        if (state.EnemyHills.Contains(loc)) {
+                            int tempDistance = state.GetDistance(ant, loc);
+                            if (!getHill || tempDistance < distance) {
+                                location = loc;
+                            }
+
+                            getHill = true;
+
+                        } else if (state.FoodTiles.Contains(loc) && !getHill) {
+                            int tempDistance = state.GetDistance(ant, loc);
+
+                            if (tempDistance < distance) {
+                                distance = tempDistance;
+                                location = loc;
+                            }
+                        }
+                    }
+                }
+            }
+
+            return location;
+        }
 
 
         private Direction DirectionFromPath(List<Location> path, IGameState state) {
@@ -181,10 +189,10 @@ namespace Ants {
 
 		
 		public static void Main (string[] args) {
-#if DEBUG
+/*#if DEBUG
             System.Diagnostics.Debugger.Launch();
             while (!System.Diagnostics.Debugger.IsAttached) { }
-#endif
+#endif*/
 
 			new Ants().PlayGame(new MyBot());
 		}

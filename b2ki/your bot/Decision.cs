@@ -53,7 +53,8 @@ namespace Ants {
 
             y = k2 * (1 - fogFraction) * targets.Count;
 
-            z = (int)(state.MyAnts.Count / 10);
+            //z = (int)(state.MyAnts.Count / 10);
+            z = 0;
 
             float sum = x + y + z;
 

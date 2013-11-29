@@ -288,7 +288,7 @@ namespace Ants {
 		/// <returns>The 1 or 2 closest directions from <paramref name="loc1"/> to <paramref name="loc2"/></returns>
 		public ICollection<Direction> GetDirections (Location loc1, Location loc2) {
 			List<Direction> directions = new List<Direction>();
-			
+
 			if (loc1.Row < loc2.Row) {
 				if (loc2.Row - loc1.Row >= Height / 2)
 					directions.Add(Direction.North);

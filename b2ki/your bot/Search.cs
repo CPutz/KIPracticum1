@@ -5,19 +5,22 @@ namespace Ants {
 
     class Search {
         public delegate int Heuristic(Location A, Location B);
+        public delegate bool Passible(Location A);
 
         public int Width { get; private set; }
         public int Height { get; private set; }
 
         private IGameState gameState;
         private Heuristic heuristic;
+        private Passible isPassible;
         
 
-        public Search(IGameState gameState, Heuristic heuristic) {
+        public Search(IGameState gameState, Heuristic heuristic, Passible isPassible) {
             this.gameState = gameState;
             this.Width = gameState.Width;
             this.Height = gameState.Height;
             this.heuristic = heuristic;
+            this.isPassible = isPassible;
         }
 
         /// <summary>
@@ -61,7 +64,7 @@ namespace Ants {
 
                             //If neighbour in closedSet and F is worse than neighbour.F, or neighbour is not a passable block, then go to next neighbour.
                             if ((closedSet[neighbour.Row, neighbour.Col] != null && F >= closedSet[neighbour.Row, neighbour.Col].F) ||
-                                !gameState.GetIsUnoccupied(neighbour))
+                                !isPassible(neighbour))
                                 continue;
 
                             bool notInOpen = !openSet.Contains(neighbour);
