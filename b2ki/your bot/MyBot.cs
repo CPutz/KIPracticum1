@@ -15,13 +15,25 @@ namespace Ants {
         //Formation formation;
 
 
+        Ant onHill;
+        int time;
+
+
 		// DoTurn is run once per turn
 		public override void DoTurn (IGameState state) {
             this.decision.Update(state);
 
             
-            Search search = new Search(state, state.GetDistance, state.GetIsUnoccupied);
-            Search transparentSearch = new Search(state, state.GetDistance, state.GetIsPassable);
+            //Search search = new Search(state, state.GetDistance, state.GetIsUnoccupied);
+            //Search transparentSearch = new Search(state, state.GetDistance, state.GetIsPassable);
+            //Search attackableSearch = new Search(state, state.GetDistance, 
+            //    (Location location) => { return state.GetIsUnoccupied(location) && state.GetIsAttackable(location); });
+
+            Search search = new Search(state, state.GetDistance,
+                (Location location) => { return state.GetIsUnoccupied(location) && !state.GetIsAttackable(location); });
+            Search transparentSearch = new Search(state, state.GetDistance,
+                (Location location) => { return state.GetIsPassable(location) && !state.GetIsAttackable(location); });
+            Search attackableSearch = new Search(state, state.GetDistance, state.GetIsPassable);
 
             /*foreach (Location loc in state.MyDeads) {
                 Ant ant = new Ant(loc.Row, loc.Col, 0, 0); //ghetto!!!
@@ -63,8 +75,6 @@ namespace Ants {
                 }
                 prev = ant;
             }*/
-            
-
 
 
             foreach (Ant ant in state.MyAnts) {
@@ -74,6 +84,22 @@ namespace Ants {
                 if (ant.Mode == AntMode.None) {
                     ant.Mode = this.decision.GetAntMode();
                 }
+
+
+                if (ant.Equals(new Location(8, 16))) {
+                    if (onHill == null || ant.AntNumber != onHill.AntNumber) {
+                        onHill = ant;
+                        time = 0;
+                    } else {
+                        time++;
+                    }
+
+                }
+
+                if (time >= 3) {
+                    int tets = 2;
+                }
+
 
                /* if (ant.Mode == AntMode.Attack) {
                     if (!formation.Contains(ant) && formation.Size < 5) {
@@ -95,7 +121,8 @@ namespace Ants {
                     } else {
                         location = null;
                     }
-                } 
+                }
+
                 if (location == null) {
 
                     if (ant.Equals(ant.Target)) {
@@ -110,6 +137,10 @@ namespace Ants {
 
                     if (ant.Route == null) {
                         ant.Route = transparentSearch.AStar(ant, ant.Target);
+                    }
+
+                    if (ant.Route == null) {
+                        ant.Route = attackableSearch.AStar(ant, ant.Target);
                     }
 
                     //IDEA: check whether route is ok for next k locations (k=10 for example).
@@ -189,10 +220,10 @@ namespace Ants {
 
 		
 		public static void Main (string[] args) {
-/*#if DEBUG
+#if DEBUG
             System.Diagnostics.Debugger.Launch();
             while (!System.Diagnostics.Debugger.IsAttached) { }
-#endif*/
+#endif
 
 			new Ants().PlayGame(new MyBot());
 		}

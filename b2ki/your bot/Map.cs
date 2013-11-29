@@ -9,6 +9,7 @@ namespace Ants {
     public class Map<T> : IEnumerable<T> where T : Location {
         public int Width { get; private set; }
         public int Height { get; private set; }
+        public int Size { get { return items.Count; } }
 
         private bool[,] map;
         private List<T> items;

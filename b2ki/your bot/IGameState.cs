@@ -100,11 +100,9 @@ namespace Ants {
         bool[,] VisibilityMap { get; }
 
         /// <summary>
-        /// Gets whether a location contains an enemy.
+        /// Gets whether an ant could be attack at a specific location
         /// </summary>
-        //bool[,] EnemyMap { get; }
-
-        //bool[,] FoodMap { get; }
+        bool[,] EnemyAttackMap { get; }
 
 		/// <summary>
 		/// Gets the <see cref="Tile"/> for the <paramref name="location"/>.
@@ -131,6 +129,13 @@ namespace Ants {
 		/// <returns><c>true</c> if the location is passable and does not contain an ant, <c>false</c> otherwise.</returns>
 		bool GetIsUnoccupied (Location location);
 
+        /// <summary>
+        /// Gets whether <paramref name="location"/> could be attacked in the next turn.
+        /// </summary>
+        /// <param name="location">The location to check.</param>
+        /// <returns><c>true</c> if the location could be attacked in the next turn, <c>false</c> otherwise.</returns>
+        bool GetIsAttackable (Location location);
+
 		/// <summary>
 		/// Gets the destination if an ant at <paramref name="location"/> goes in <paramref name="direction"/>, accounting for wrap around.
 		/// </summary>
@@ -145,7 +150,7 @@ namespace Ants {
         /// <param name="location">The starting location.</param>
         /// <param name="direction">The direction to move.</param>
         /// <returns>The new location, accounting for wrap around.</returns>
-        Location GetDestination(Location location, Location direction);
+        Location GetDestination (Location location, Location direction);
 
 		/// <summary>
 		/// Gets the distance between <paramref name="loc1"/> and <paramref name="loc2"/>.

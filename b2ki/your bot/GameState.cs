@@ -39,6 +39,7 @@ namespace Ants {
         private int antNumber;
 
         public bool[,] VisibilityMap { get; private set; }
+        public bool[,] EnemyAttackMap { get; private set; }
 
 		public Tile this[Location location] {
 			get { return this.map[location.Row, location.Col]; }
@@ -86,6 +87,7 @@ namespace Ants {
 			}
 
             VisibilityMap = new bool[Height, Width];
+            EnemyAttackMap = new bool[Height, Width];
 		}
 
 		#region State mutators
@@ -116,6 +118,7 @@ namespace Ants {
 
             // clear maps
             VisibilityMap = new bool[Height, Width];
+            EnemyAttackMap = new bool[Height, Width];
 		}
 
         //this method should every turn be called after all ants have been added to MyAnts
@@ -154,6 +157,23 @@ namespace Ants {
             } else {
                 ant = new Ant(row, col, team, 0);
                 EnemyAnts.Add(ant);
+
+                //Direction.None IS ALSO CHECKED BUT SHOULDN'T BE...
+                foreach (Direction direction in Enum.GetValues(typeof(Direction))) {
+                    Location newLocation = GetDestination(ant, direction);
+
+                    for (int r = -1 * AttackRadius; r <= AttackRadius; ++r) {
+                        for (int c = -1 * AttackRadius; c <= AttackRadius; ++c) {
+                            int square = r * r + c * c;
+                            if (square <= AttackRadius2) {
+                                Location loc = GetDestination(newLocation, new Location(r, c));
+
+                                //add visible locations to visibilitymap
+                                EnemyAttackMap[loc.Row, loc.Col] = true;
+                            }
+                        }
+                    }
+                }
             }
 		}
 
@@ -234,6 +254,15 @@ namespace Ants {
 
 			return !b && GetIsPassable(location) && myAntsTemp[location.Row, location.Col] == null;
 		}
+
+        /// <summary>
+        /// Gets whether <paramref name="location"/> could be attacked in the next turn.
+        /// </summary>
+        /// <param name="location">The location to check.</param>
+        /// <returns><c>true</c> if the location could be attacked in the next turn, <c>false</c> otherwise.</returns>
+        public bool GetIsAttackable (Location location) {
+            return EnemyAttackMap[location.Row, location.Col];
+        }
 		
 		/// <summary>
 		/// Gets the destination if an ant at <paramref name="location"/> goes in <paramref name="direction"/>, accounting for wrap around.

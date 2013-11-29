@@ -10,12 +10,14 @@ namespace Ants {
 		public static readonly Location South = new Location(1, 0);
 		public static readonly Location West = new Location(0, -1);
 		public static readonly Location East = new Location(0, 1);
+        public static readonly Location None = new Location(0, 0);
 		
 		public static IDictionary<Direction, Location> Aim = new Dictionary<Direction, Location> {
 			{ Direction.North, North},
 			{ Direction.East, East},
 			{ Direction.South, South},
-			{ Direction.West, West}
+			{ Direction.West, West},
+            { Direction.None, None}
 		};
 		
 		private const string READY = "ready";
