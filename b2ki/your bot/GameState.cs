@@ -21,22 +21,25 @@ namespace Ants {
 		}
 
 		public int ViewRadius2 { get; private set; }
-        public int ViewRadiusRoot { get; private set; }
+        public int ViewRadius { get; private set; }
 		public int AttackRadius2 { get; private set; }
+        public int AttackRadius { get; private set; }
 		public int SpawnRadius2 { get; private set; }
 
 		public List<Ant> MyAnts { get; private set; }
 		public List<AntHill> MyHills { get; private set; }
-		public List<Ant> EnemyAnts { get; private set; }
-		public List<AntHill> EnemyHills { get; private set; }
-		public List<Location> DeadTiles { get; private set; }
-		public List<Location> FoodTiles { get; private set; }
+		public Map<Ant> EnemyAnts { get; private set; }
+		public Map<AntHill> EnemyHills { get; private set; }
+        public List<Location> MyDeads { get; private set; }
+		public List<Location> EnemyDeads { get; private set; }
+		public Map<Location> FoodTiles { get; private set; }
 
         //keeps track of where all ants will be positioned in the next turn.
         private Ant[,] myAntsTemp;
         private int antNumber;
 
         public bool[,] VisibilityMap { get; private set; }
+        public bool[,] EnemyAttackMap { get; private set; }
 
 		public Tile this[Location location] {
 			get { return this.map[location.Row, location.Col]; }
@@ -60,28 +63,31 @@ namespace Ants {
             Turn = 0;
 			
 			ViewRadius2 = viewradius2;
-            ViewRadiusRoot = (int)Math.Floor(Math.Sqrt(this.ViewRadius2));
+            ViewRadius = (int)Math.Floor(Math.Sqrt(this.ViewRadius2));
 			AttackRadius2 = attackradius2;
+            AttackRadius = (int)Math.Floor(Math.Sqrt(this.AttackRadius2));
 			SpawnRadius2 = spawnradius2;
 			
 			MyAnts = new List<Ant>();
 			MyHills = new List<AntHill>();
-			EnemyAnts = new List<Ant>();
-			EnemyHills = new List<AntHill>();
-			DeadTiles = new List<Location>();
-			FoodTiles = new List<Location>();
+			EnemyAnts = new Map<Ant>(Width, Height);
+			EnemyHills = new Map<AntHill>(Width, Height);
+			MyDeads = new List<Location>();
+            EnemyDeads = new List<Location>();
+			FoodTiles = new Map<Location>(Width, Height);
 
-            myAntsTemp = new Ant[height, width];
+            myAntsTemp = new Ant[Height, Width];
             antNumber = 0;
-			
-			map = new Tile[height, width];
-			for (int row = 0; row < height; row++) {
-				for (int col = 0; col < width; col++) {
+
+            map = new Tile[Height, Width];
+            for (int row = 0; row < Height; row++) {
+                for (int col = 0; col < Width; col++) {
 					map[row, col] = Tile.Land;
 				}
 			}
 
-            VisibilityMap = new bool[height, width];
+            VisibilityMap = new bool[Height, Width];
+            EnemyAttackMap = new bool[Height, Width];
 		}
 
 		#region State mutators
@@ -96,20 +102,26 @@ namespace Ants {
 			foreach (Location loc in MyHills) map[loc.Row, loc.Col] = Tile.Land;
 			foreach (Location loc in EnemyAnts) map[loc.Row, loc.Col] = Tile.Land;
 			foreach (Location loc in EnemyHills) map[loc.Row, loc.Col] = Tile.Land;
-			foreach (Location loc in DeadTiles) map[loc.Row, loc.Col] = Tile.Land;
+			foreach (Location loc in MyDeads) map[loc.Row, loc.Col] = Tile.Land;
+            foreach (Location loc in EnemyDeads) map[loc.Row, loc.Col] = Tile.Land;
 
 			MyHills.Clear();
 			MyAnts.Clear();
 			EnemyHills.Clear();
 			EnemyAnts.Clear();
-			DeadTiles.Clear();
+            MyDeads.Clear();
+            EnemyDeads.Clear();
 			
 			// set all known food to unseen
 			foreach (Location loc in FoodTiles) map[loc.Row, loc.Col] = Tile.Land;
 			FoodTiles.Clear();
+
+            // clear maps
+            VisibilityMap = new bool[Height, Width];
+            EnemyAttackMap = new bool[Height, Width];
 		}
 
-        //this method should every turn be called after all ants have been added to MyAn
+        //this method should every turn be called after all ants have been added to MyAnts
         public void UpdateTurn() {
             myAntsTemp = new Ant[Height, Width];
             //fill myAntsTemp data
@@ -130,14 +142,14 @@ namespace Ants {
                 MyAnts.Add(ant);
 
                 //calculate visibility for ant
-                for (int r = -1 * ViewRadiusRoot; r <= ViewRadiusRoot; ++r) {
-                    for (int c = -1 * ViewRadiusRoot; c <= ViewRadiusRoot; ++c) {
+                for (int r = -1 * ViewRadius; r <= ViewRadius; ++r) {
+                    for (int c = -1 * ViewRadius; c <= ViewRadius; ++c) {
                         int square = r * r + c * c;
-                        if (square < this.ViewRadius2) {
+                        if (square <= ViewRadius2) {
                             Location loc = GetDestination(ant, new Location(r, c));
-                            
-                            VisibilityMap[loc.Row, loc.Col] = true;
 
+                            //add visible locations to visibilitymap
+                            VisibilityMap[loc.Row, loc.Col] = true;
                         }
                     }
                 }
@@ -145,6 +157,23 @@ namespace Ants {
             } else {
                 ant = new Ant(row, col, team, 0);
                 EnemyAnts.Add(ant);
+
+                //Direction.None IS ALSO CHECKED BUT SHOULDN'T BE...
+                foreach (Direction direction in Enum.GetValues(typeof(Direction))) {
+                    Location newLocation = GetDestination(ant, direction);
+
+                    for (int r = -1 * AttackRadius; r <= AttackRadius; ++r) {
+                        for (int c = -1 * AttackRadius; c <= AttackRadius; ++c) {
+                            int square = r * r + c * c;
+                            if (square <= AttackRadius2) {
+                                Location loc = GetDestination(newLocation, new Location(r, c));
+
+                                //add visible locations to visibilitymap
+                                EnemyAttackMap[loc.Row, loc.Col] = true;
+                            }
+                        }
+                    }
+                }
             }
 		}
 
@@ -166,7 +195,7 @@ namespace Ants {
 			map[row, col] = Tile.Water;
 		}
 
-		public void DeadAnt (int row, int col) {
+		public void DeadAnt (int row, int col, int team) {
 			// food could spawn on a spot where an ant just died
 			// don't overwrite the space unless it is land
 			if (map[row, col] == Tile.Land) {
@@ -174,7 +203,11 @@ namespace Ants {
 			}
 			
 			// but always add to the dead list
-			DeadTiles.Add(new Location(row, col));
+            if (team == 0) {
+                MyDeads.Add(new Location(row, col));
+            } else {
+                EnemyDeads.Add(new Location(row, col));
+            }
 		}
 
 		public void AntHill (int row, int col, int team) {
@@ -205,12 +238,7 @@ namespace Ants {
 		/// <returns><c>true</c> if the location is not water and there is no ant next turn, <c>false</c> otherwise.</returns>
 		/// <seealso cref="GetIsUnoccupied"/>
 		public bool GetIsPassable (Location location) {
-            bool b = false;
-            foreach (AntHill hill in MyHills) {
-                b |= hill.Equals(location);
-            }
-            
-            return !b && map[location.Row, location.Col] != Tile.Water && myAntsTemp[location.Row, location.Col] == null;
+            return map[location.Row, location.Col] != Tile.Water;
 		}
 		
 		/// <summary>
@@ -219,8 +247,22 @@ namespace Ants {
 		/// <param name="location">The location to check.</param>
 		/// <returns><c>true</c> if the location is passable and does not contain an ant, <c>false</c> otherwise.</returns>
 		public bool GetIsUnoccupied (Location location) {
-			return GetIsPassable(location) && map[location.Row, location.Col] != Tile.Ant;
+            bool b = false;
+            foreach (AntHill hill in MyHills) {
+                b |= hill.Equals(location);
+            }
+
+			return !b && GetIsPassable(location) && myAntsTemp[location.Row, location.Col] == null;
 		}
+
+        /// <summary>
+        /// Gets whether <paramref name="location"/> could be attacked in the next turn.
+        /// </summary>
+        /// <param name="location">The location to check.</param>
+        /// <returns><c>true</c> if the location could be attacked in the next turn, <c>false</c> otherwise.</returns>
+        public bool GetIsAttackable (Location location) {
+            return EnemyAttackMap[location.Row, location.Col];
+        }
 		
 		/// <summary>
 		/// Gets the destination if an ant at <paramref name="location"/> goes in <paramref name="direction"/>, accounting for wrap around.
@@ -275,7 +317,7 @@ namespace Ants {
 		/// <returns>The 1 or 2 closest directions from <paramref name="loc1"/> to <paramref name="loc2"/></returns>
 		public ICollection<Direction> GetDirections (Location loc1, Location loc2) {
 			List<Direction> directions = new List<Direction>();
-			
+
 			if (loc1.Row < loc2.Row) {
 				if (loc2.Row - loc1.Row >= Height / 2)
 					directions.Add(Direction.North);
@@ -308,9 +350,9 @@ namespace Ants {
 		public bool GetIsVisible(Location loc)
 		{
 			List<Location> offsets = new List<Location>();
-            for (int r = -1 * ViewRadiusRoot; r <= ViewRadiusRoot; ++r)
+            for (int r = -1 * ViewRadius; r <= ViewRadius; ++r)
 			{
-                for (int c = -1 * ViewRadiusRoot; c <= ViewRadiusRoot; ++c)
+                for (int c = -1 * ViewRadius; c <= ViewRadius; ++c)
 				{
 					int square = r * r + c * c;
 					if (square < this.ViewRadius2)

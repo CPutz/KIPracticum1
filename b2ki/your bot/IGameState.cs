@@ -35,14 +35,19 @@ namespace Ants {
 		int ViewRadius2 { get; }
 
         /// <summary>
-        /// Squareroot of ViewRadius2 and rounded downward.
+        /// Gets the squareroot of ViewRadius2 as integer.
         /// </summary>
-        int ViewRadiusRoot { get; }
+        int ViewRadius { get; }
 
 		/// <summary>
 		/// Gets the ant attack range radius squared.
 		/// </summary>
 		int AttackRadius2 { get; }
+
+        /// <summary>
+        /// Gets the squareroot of AttackRadius2 as integer.
+        /// </summary>
+        int AttackRadius { get; }
 
 		/// <summary>
 		/// Gets the ant hill spawn radius squared.
@@ -67,27 +72,37 @@ namespace Ants {
 		/// <summary>
 		/// Gets a list of currently visible enemy ants.
 		/// </summary>
-		List<Ant> EnemyAnts { get; }
+		Map<Ant> EnemyAnts { get; }
 
 		/// <summary>
 		/// Gets a list of currently visible enemy hills.
 		/// </summary>
-		List<AntHill> EnemyHills { get; }
+		Map<AntHill> EnemyHills { get; }
+
+        /// <summary>
+        /// Gets a list of currently-visible locations where ants of our team died last turn.
+        /// </summary>
+        List<Location> MyDeads { get; }
 
 		/// <summary>
-		/// Gets a list of currently-visible locations where ants died last turn.
+		/// Gets a list of currently-visible locations where enemy ants died last turn.
 		/// </summary>
-		List<Location> DeadTiles { get; }
+		List<Location> EnemyDeads { get; }
 
 		/// <summary>
 		/// Gets a list of food tiles visible this turn.
 		/// </summary>
-		List<Location> FoodTiles { get; }
+		Map<Location> FoodTiles { get; }
 
         /// <summary>
-        /// 
+        /// Gets whether a location is visible or not.
         /// </summary>
         bool[,] VisibilityMap { get; }
+
+        /// <summary>
+        /// Gets whether an ant could be attack at a specific location
+        /// </summary>
+        bool[,] EnemyAttackMap { get; }
 
 		/// <summary>
 		/// Gets the <see cref="Tile"/> for the <paramref name="location"/>.
@@ -114,6 +129,13 @@ namespace Ants {
 		/// <returns><c>true</c> if the location is passable and does not contain an ant, <c>false</c> otherwise.</returns>
 		bool GetIsUnoccupied (Location location);
 
+        /// <summary>
+        /// Gets whether <paramref name="location"/> could be attacked in the next turn.
+        /// </summary>
+        /// <param name="location">The location to check.</param>
+        /// <returns><c>true</c> if the location could be attacked in the next turn, <c>false</c> otherwise.</returns>
+        bool GetIsAttackable (Location location);
+
 		/// <summary>
 		/// Gets the destination if an ant at <paramref name="location"/> goes in <paramref name="direction"/>, accounting for wrap around.
 		/// </summary>
@@ -121,6 +143,14 @@ namespace Ants {
 		/// <param name="direction">The direction to move.</param>
 		/// <returns>The new location, accounting for wrap around.</returns>
 		Location GetDestination (Location location, Direction direction);
+
+        /// <summary>
+        /// Gets the destination if an ant at <paramref name="location"/> goes in <paramref name="direction"/>, accounting for wrap around.
+        /// </summary>
+        /// <param name="location">The starting location.</param>
+        /// <param name="direction">The direction to move.</param>
+        /// <returns>The new location, accounting for wrap around.</returns>
+        Location GetDestination (Location location, Location direction);
 
 		/// <summary>
 		/// Gets the distance between <paramref name="loc1"/> and <paramref name="loc2"/>.

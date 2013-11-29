@@ -51,9 +51,11 @@
     <Compile Include="DataStructures.cs" />
     <Compile Include="Decision.cs" />
     <Compile Include="Direction.cs" />
+    <Compile Include="Formation.cs" />
     <Compile Include="GameState.cs" />
     <Compile Include="IGameState.cs" />
     <Compile Include="Location.cs" />
+    <Compile Include="Map.cs" />
     <Compile Include="MyBot.cs" />
     <Compile Include="Search.cs" />
     <Compile Include="Tile.cs" />

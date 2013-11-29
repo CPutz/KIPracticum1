@@ -148,18 +148,23 @@ namespace Ants {
 
     class LinkedList<T> : IEnumerable<T>
     {
-        private LLElement<T> head;
-        private LLElement<T> last;
+        public T First {
+            get {
+                if (head != null) return head.Value;
+                else return default(T);
+            }
+        }
 
         public int Size { get; private set; }
 
-        public LinkedList()
-        {
+        private LLElement<T> head;
+        private LLElement<T> last;
+
+        public LinkedList() {
             this.Size = 0;
         }
 
-        public void Add(T key)
-        {
+        public void Add(T key) {
             LLElement<T> k = new LLElement<T>(key);
             if (this.head != null)
                 this.last.Next = k;
@@ -170,16 +175,20 @@ namespace Ants {
             this.Size++;
         }
 
-        /*public bool Remove(T key) {
+        public bool Remove(T key) {
             LLElement<T> x = head;
             LLElement<T> prev = null;
 
             while (x != null) {
                 if (x.Value.Equals(key)) {
-                    if (prev != null)
+                    if (prev != null) {
                         prev.Next = x.Next;
-                    else
+                    } else {
                         head = x.Next;
+                    }
+                    if (x == last) {
+                        last = prev;
+                    } 
 
                     return true;
                 }
@@ -189,10 +198,9 @@ namespace Ants {
             }
 
             return false;
-        }*/
+        }
 
-        public T Search(T key)
-        {
+        public T Search(T key) {
             LLElement<T> x = this.head;
 
             while (x != null)
@@ -206,8 +214,7 @@ namespace Ants {
             return default(T);
         }
 
-        public IEnumerator<T> GetEnumerator()
-        {
+        public IEnumerator<T> GetEnumerator() {
             LLElement<T> x = this.head;
 
             while (x != null)
@@ -217,8 +224,7 @@ namespace Ants {
             }
         }
 
-        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
-        {
+        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() {
             return GetEnumerator();
         }
     }

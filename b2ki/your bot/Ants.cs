@@ -10,12 +10,14 @@ namespace Ants {
 		public static readonly Location South = new Location(1, 0);
 		public static readonly Location West = new Location(0, -1);
 		public static readonly Location East = new Location(0, 1);
+        public static readonly Location None = new Location(0, 0);
 		
 		public static IDictionary<Direction, Location> Aim = new Dictionary<Direction, Location> {
 			{ Direction.North, North},
 			{ Direction.East, East},
 			{ Direction.South, South},
-			{ Direction.West, West}
+			{ Direction.West, West},
+            { Direction.None, None}
 		};
 		
 		private const string READY = "ready";
@@ -96,6 +98,7 @@ namespace Ants {
 			this.state = new GameState(width, height, 
 			                           turntime, loadtime, 
 			                           viewradius2, attackradius2, spawnradius2);
+
 		}
 		
 		// parse engine input and update the game state
@@ -120,9 +123,9 @@ namespace Ants {
 					} else if (tokens[0].Equals("w")) {
 						state.AddWater(row, col);
 					} else if (tokens[0].Equals("d")) {
-						state.DeadAnt(row, col);
+						state.DeadAnt(row, col, int.Parse(tokens[3]));
 					} else if (tokens[0].Equals("h")) {
-						state.AntHill (row, col, int.Parse(tokens[3]));
+						state.AntHill(row, col, int.Parse(tokens[3]));
 					}
 				}
 			}

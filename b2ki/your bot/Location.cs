@@ -76,15 +76,31 @@ namespace Ants {
 	public class Ant : TeamLocation, IEquatable<Ant> {
         public int AntNumber { get; private set; }
         public Location Target { get; set; }
+        public List<Location> Route { get; set; }
         public AntMode Mode { get; set; }
+        
+        //number of turns that an ant cannot move due to another ant standing in it's path
+        public int IsWaitingFor { get; set; }
 
         public Ant (int row, int col, int team, int antNumber) : base (row, col, team) {
             this.AntNumber = antNumber;
+            this.IsWaitingFor = 0;
 		}
 
         public void SetLocation(int row, int col) {
             this.Row = row;
             this.Col = col;
+        }
+
+        public override bool Equals(object obj) {
+            if (ReferenceEquals(null, obj))
+                return false;
+            if (ReferenceEquals(this, obj))
+                return true;
+            if (obj.GetType() != typeof(Ant))
+                return false;
+
+            return Equals((Ant)obj);
         }
 
 		public bool Equals (Ant other) {
