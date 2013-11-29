@@ -29,11 +29,12 @@ namespace Ants {
             //Search attackableSearch = new Search(state, state.GetDistance, 
             //    (Location location) => { return state.GetIsUnoccupied(location) && state.GetIsAttackable(location); });
 
-            Search search = new Search(state, state.GetDistance,
+            /*Search search = new Search(state, state.GetDistance,
                 (Location location) => { return state.GetIsUnoccupied(location) && !state.GetIsAttackable(location); });
             Search transparentSearch = new Search(state, state.GetDistance,
-                (Location location) => { return state.GetIsPassable(location) && !state.GetIsAttackable(location); });
-            Search attackableSearch = new Search(state, state.GetDistance, state.GetIsPassable);
+                (Location location) => { return state.GetIsPassable(location) && !state.GetIsAttackable(location); });*/
+            Search attackableSearch = new Search(state, state.GetDistance,
+                (Location location) => { return state.GetIsUnoccupied(location) && !state.GetIsAttackable(location); });
 
             /*foreach (Location loc in state.MyDeads) {
                 Ant ant = new Ant(loc.Row, loc.Col, 0, 0); //ghetto!!!
@@ -114,7 +115,8 @@ namespace Ants {
                 Location location = GetFoodHillTarget(ant, state);
 
                 if (location != null) {
-                    List<Location> path = search.AStar(ant, location);
+                    //ONLY ATTACKEBLESEARCH?
+                    List<Location> path = attackableSearch.AStar(ant, location);
 
                     if (path != null && path.Count > 1 && state.GetIsUnoccupied(path[1])) {
                         IssueOrder(state, ant, DirectionFromPath(path, state));
@@ -130,23 +132,37 @@ namespace Ants {
                         ant.Route = null;
                     }
 
+                    if (ant.Target != null && ant.Route != null && ant.Route.Count > 1) {
+                        if (state.GetIsAttackable(ant.Route[1])) {
+                            ant.Route = null;
+                        }
+                    }
+
                     if (ant.Target == null || ant.Route == null || ant.IsWaitingFor > 1) {
                         ant.Target = decision.GetTarget(ant);
-                        ant.Route = search.AStar(ant, ant.Target);
-                    }
-
-                    if (ant.Route == null) {
-                        ant.Route = transparentSearch.AStar(ant, ant.Target);
-                    }
-
-                    if (ant.Route == null) {
                         ant.Route = attackableSearch.AStar(ant, ant.Target);
+                    }
+
+                    if (ant.Route == null) {
+                        //ant.Route = search.AStar(ant, ant.Target);
+                    }
+
+                    if (ant.Route == null) {
+                        //ant.Route = transparentSearch.AStar(ant, ant.Target);
                     }
 
                     //IDEA: check whether route is ok for next k locations (k=10 for example).
                     if ((ant.Route != null && ant.Route.Count > 1 && !state.GetIsPassable(ant.Route[1]))) {
                         ant.Target = decision.GetTarget(ant);
-                        ant.Route = search.AStar(ant, ant.Target);
+                        ant.Route = attackableSearch.AStar(ant, ant.Target);
+
+                        if (ant.Route == null) {
+                            //ant.Route = search.AStar(ant, ant.Target);
+                        }
+
+                        if (ant.Route == null) {
+                            //ant.Route = transparentSearch.AStar(ant, ant.Target);
+                        }
                     }
 
                     if (ant.Route != null && ant.Route.Count > 1) {
@@ -220,10 +236,10 @@ namespace Ants {
 
 		
 		public static void Main (string[] args) {
-#if DEBUG
+/*#if DEBUG
             System.Diagnostics.Debugger.Launch();
             while (!System.Diagnostics.Debugger.IsAttached) { }
-#endif
+#endif*/
 
 			new Ants().PlayGame(new MyBot());
 		}
