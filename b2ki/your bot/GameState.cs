@@ -348,6 +348,23 @@ namespace Ants {
 			
 			return directions;
 		}
+
+        /// <summary>
+        /// Returns the position that the Ant <paramref name="ant"/> will be in the next turn.
+        /// </summary>
+        /// <param name="ant">The ant to be checked</param>
+        /// <returns>the position that the Ant <paramref name="ant"/> will be in the next turn if it exists, 
+        /// <c>null</c> otherwise.</returns>
+        public Location GetNextTurnLocation(Ant ant) {
+            foreach (Direction direction in Enum.GetValues(typeof(Direction))) {
+                Location loc = GetDestination(ant, direction);
+                if (this.myAntsTemp[loc.Row, loc.Col] != null && ant.AntNumber == this.myAntsTemp[loc.Row, loc.Col].AntNumber) {
+                    return loc;
+                }
+            }
+
+            return null;
+        }
 		
 		public bool GetIsVisible(Location loc)
 		{

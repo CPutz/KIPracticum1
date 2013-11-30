@@ -6,8 +6,9 @@ namespace Ants {
 	class MyBot : Bot {
 
         private DecisionMaker decision;
+        private List<Ant> onHill;
 
-        public MyBot() {
+        public MyBot() : base() {
             this.decision = new DecisionMaker();
         }
 
@@ -15,13 +16,14 @@ namespace Ants {
         //Formation formation;
 
 
-        Ant onHill;
-        int time;
+        //Ant onHill;
+        //int time;
 
 
 		// DoTurn is run once per turn
 		public override void DoTurn (IGameState state) {
             this.decision.Update(state);
+            onHill = new List<Ant>();
 
             Search search1 = new Search(state, state.GetDistance,
                 (Location location) => { return state.GetIsUnoccupied(location) && !state.GetIsAttackable(location); });
@@ -75,13 +77,18 @@ namespace Ants {
             foreach (Ant ant in state.MyAnts) {
                 ant.IsWaitingFor++;
 
+                foreach (AntHill hill in state.MyHills) {
+                    if (ant.Equals(hill)) {
+                        onHill.Add(ant);
+                    }
+                }
 
                 if (ant.Mode == AntMode.None) {
                     ant.Mode = this.decision.GetAntMode();
                 }
 
 
-                if (ant.Equals(new Location(8, 16))) {
+                /*if (ant.Equals(new Location(8, 16))) {
                     if (onHill == null || ant.AntNumber != onHill.AntNumber) {
                         onHill = ant;
                         time = 0;
@@ -89,7 +96,7 @@ namespace Ants {
                         time++;
                     }
 
-                }
+                }*/
 
 
                /* if (ant.Mode == AntMode.Attack) {
@@ -130,8 +137,12 @@ namespace Ants {
                         }
                     }
 
-                    if (ant.Target == null || ant.Route == null || ant.IsWaitingFor > 1) {
+                    if (ant.Target == null || ant.IsWaitingFor > 1) {
                         ant.Target = decision.GetTarget(ant);
+                        ant.Route = null;
+                    }
+
+                    if(ant.Route == null) {
 
                         //if route using search1 or search3 is null, then try search2 or search4
                         if (ant.Mode == AntMode.Attack) {
@@ -177,6 +188,31 @@ namespace Ants {
 
                 if (state.TimeRemaining < 10) 
                     break;
+            }
+
+            HandleReservations(state);
+
+            foreach (Ant ant in onHill) {
+                bool b = false;
+                foreach (AntHill hill in state.MyHills) {
+                    if (state.GetNextTurnLocation(ant).Equals(hill)) {
+                        b = true;
+                        break;
+                    }
+                }
+
+                //ant stands on a hill
+                if (b) {
+                    foreach (Direction direction in Enum.GetValues(typeof(Direction))) {
+                        if (direction != Direction.None) {
+                            Location location = state.GetDestination(ant, direction);
+                            if (state.GetIsUnoccupied(location)) {
+                                IssueOrder(state, ant, direction);
+                                break;
+                            }
+                        }
+                    }
+                }
             }
 		}
 
@@ -237,10 +273,10 @@ namespace Ants {
 
 		
 		public static void Main (string[] args) {
-/*#if DEBUG
+#if DEBUG
             System.Diagnostics.Debugger.Launch();
             while (!System.Diagnostics.Debugger.IsAttached) { }
-#endif*/
+#endif
 
 			new Ants().PlayGame(new MyBot());
 		}
