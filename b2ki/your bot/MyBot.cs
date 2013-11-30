@@ -23,18 +23,12 @@ namespace Ants {
 		public override void DoTurn (IGameState state) {
             this.decision.Update(state);
 
-            
-            //Search search = new Search(state, state.GetDistance, state.GetIsUnoccupied);
-            //Search transparentSearch = new Search(state, state.GetDistance, state.GetIsPassable);
-            //Search attackableSearch = new Search(state, state.GetDistance, 
-            //    (Location location) => { return state.GetIsUnoccupied(location) && state.GetIsAttackable(location); });
-
-            /*Search search = new Search(state, state.GetDistance,
+            Search search1 = new Search(state, state.GetDistance,
                 (Location location) => { return state.GetIsUnoccupied(location) && !state.GetIsAttackable(location); });
-            Search transparentSearch = new Search(state, state.GetDistance,
-                (Location location) => { return state.GetIsPassable(location) && !state.GetIsAttackable(location); });*/
-            Search attackableSearch = new Search(state, state.GetDistance,
-                (Location location) => { return state.GetIsUnoccupied(location) && !state.GetIsAttackable(location); });
+            Search search2 = new Search(state, state.GetDistance,
+                (Location location) => { return state.GetIsPassable(location) && !state.GetIsAttackable(location); });
+            Search search3 = new Search(state, state.GetDistance, state.GetIsUnoccupied);
+            Search search4 = new Search(state, state.GetDistance, state.GetIsPassable);
 
             /*foreach (Location loc in state.MyDeads) {
                 Ant ant = new Ant(loc.Row, loc.Col, 0, 0); //ghetto!!!
@@ -97,10 +91,6 @@ namespace Ants {
 
                 }
 
-                if (time >= 3) {
-                    int tets = 2;
-                }
-
 
                /* if (ant.Mode == AntMode.Attack) {
                     if (!formation.Contains(ant) && formation.Size < 5) {
@@ -115,10 +105,12 @@ namespace Ants {
                 Location location = GetFoodHillTarget(ant, state);
 
                 if (location != null) {
-                    //ONLY ATTACKEBLESEARCH?
-                    List<Location> path = attackableSearch.AStar(ant, location);
+                    //only get food if youre not gonna die for it, and if no other ant is in the way.
+                    List<Location> path = search1.AStar(ant, location);
 
-                    if (path != null && path.Count > 1 && state.GetIsUnoccupied(path[1])) {
+                    //only get food/hill when there exists a path to the food/hill which
+                    //distance is less/eq to two times the distance between the ant and the food/hill
+                    if (path != null && path.Count > 1 && path.Count <= state.GetDistance(ant, location) * 2) {
                         IssueOrder(state, ant, DirectionFromPath(path, state));
                     } else {
                         location = null;
@@ -133,35 +125,44 @@ namespace Ants {
                     }
 
                     if (ant.Target != null && ant.Route != null && ant.Route.Count > 1) {
-                        if (state.GetIsAttackable(ant.Route[1])) {
+                        if (state.GetIsAttackable(ant.Route[1]) && ant.Mode != AntMode.Attack) {
                             ant.Route = null;
                         }
                     }
 
                     if (ant.Target == null || ant.Route == null || ant.IsWaitingFor > 1) {
                         ant.Target = decision.GetTarget(ant);
-                        ant.Route = attackableSearch.AStar(ant, ant.Target);
+
+                        //if route using search1 or search3 is null, then try search2 or search4
+                        if (ant.Mode == AntMode.Attack) {
+                            ant.Route = search3.AStar(ant, ant.Target);
+                            if (ant.Route == null) {
+                                ant.Route = search4.AStar(ant, ant.Target);
+                            }
+                        } else {
+                            ant.Route = search1.AStar(ant, ant.Target);
+                            if (ant.Route == null) {
+                                ant.Route = search2.AStar(ant, ant.Target);
+                            }
+                        }
                     }
 
-                    if (ant.Route == null) {
-                        //ant.Route = search.AStar(ant, ant.Target);
-                    }
-
-                    if (ant.Route == null) {
-                        //ant.Route = transparentSearch.AStar(ant, ant.Target);
-                    }
 
                     //IDEA: check whether route is ok for next k locations (k=10 for example).
                     if ((ant.Route != null && ant.Route.Count > 1 && !state.GetIsPassable(ant.Route[1]))) {
                         ant.Target = decision.GetTarget(ant);
-                        ant.Route = attackableSearch.AStar(ant, ant.Target);
 
-                        if (ant.Route == null) {
-                            //ant.Route = search.AStar(ant, ant.Target);
-                        }
-
-                        if (ant.Route == null) {
-                            //ant.Route = transparentSearch.AStar(ant, ant.Target);
+                        //if route using search1 or search3 is null, then try search2 or search4
+                        if (ant.Mode == AntMode.Attack) {
+                            ant.Route = search3.AStar(ant, ant.Target);
+                            if (ant.Route == null) {
+                                ant.Route = search4.AStar(ant, ant.Target);
+                            }
+                        } else {
+                            ant.Route = search1.AStar(ant, ant.Target);
+                            if (ant.Route == null) {
+                                ant.Route = search2.AStar(ant, ant.Target);
+                            }
                         }
                     }
 
@@ -174,8 +175,8 @@ namespace Ants {
                 }
                 //}
 
-                //if (state.TimeRemaining < 10) 
-                //    break;
+                if (state.TimeRemaining < 10) 
+                    break;
             }
 		}
 

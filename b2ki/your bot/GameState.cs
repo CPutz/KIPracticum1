@@ -168,8 +168,10 @@ namespace Ants {
                             if (square <= AttackRadius2) {
                                 Location loc = GetDestination(newLocation, new Location(r, c));
 
-                                //add visible locations to visibilitymap
-                                EnemyAttackMap[loc.Row, loc.Col] = true;
+                                if (GetIsPassable(loc)) {
+                                    //add visible locations to visibilitymap
+                                    EnemyAttackMap[loc.Row, loc.Col] = true;
+                                }
                             }
                         }
                     }
