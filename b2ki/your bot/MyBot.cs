@@ -152,9 +152,15 @@ namespace Ants {
                             }
                         } else {
                             ant.Route = search1.AStar(ant, ant.Target);
-                            if (ant.Route == null) {
-                                ant.Route = search2.AStar(ant, ant.Target);
+                            //if (ant.Route == null) {
+                            //    ant.Route = search2.AStar(ant, ant.Target);
+                            //}
+                            /*if (ant.Route == null) {
+                                ant.Route = search3.AStar(ant, ant.Target);
                             }
+                            if (ant.Route == null) {
+                                ant.Route = search4.AStar(ant, ant.Target);
+                            }*/
                         }
                     }
 
@@ -178,10 +184,10 @@ namespace Ants {
                     }
 
                     if (ant.Route != null && ant.Route.Count > 1) {
-                        if (state.GetIsUnoccupied(ant.Route[1])) {
+                        //if (state.GetIsUnoccupied(ant.Route[1])) {
                             IssueOrder(state, ant, DirectionFromPath(ant.Route, state));
                             ant.Route.RemoveAt(0); //ghetto
-                        }
+                        //}
                     }
                 }
                 //}
@@ -273,10 +279,10 @@ namespace Ants {
 
 		
 		public static void Main (string[] args) {
-#if DEBUG
+/*#if DEBUG
             System.Diagnostics.Debugger.Launch();
             while (!System.Diagnostics.Debugger.IsAttached) { }
-#endif
+#endif*/
 
 			new Ants().PlayGame(new MyBot());
 		}
