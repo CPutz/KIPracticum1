@@ -44,19 +44,20 @@ namespace Ants {
                 openSet.Insert(current);
 
                 while (openSet.Size > 0) {
-
                     //Get node with lowest cost+heuristic and remove it from openSet.
                     current = openSet.ExtractMax();
 
                     //Best path found if destination is removed from the openSet.
-                    if (current.Object.Equals(destination))
+                    if (current.Object.Equals(destination)) {
                         return GetPath(current);
+                    }
 
                     //Node is closed when it is pulled from the openSet.
                     closedSet[current.Object.Row, current.Object.Col] = current;
 
                     foreach (Direction direction in Enum.GetValues(typeof(Direction))) {
                         if (direction != Direction.None) {
+                            
                             Location neighbour = gameState.GetDestination(current.Object, direction);
 
                             int G = current.G + 1; //distance between nodes is always 1
@@ -68,7 +69,7 @@ namespace Ants {
                                 continue;
 
                             bool notInOpen = !openSet.Contains(neighbour);
-
+      
                             //If neighbour not in open (so never encountered or in closed), and if it's in closed, then if F is better
                             //than neighbour.F, then add neighbour to openSet, or change it's value in closedSet.
                             if (notInOpen || (closedSet[neighbour.Row, neighbour.Col] != null && F < closedSet[neighbour.Row, neighbour.Col].F)) {
