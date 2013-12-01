@@ -7,3 +7,8 @@ D:\Git_projects\KIPracticum1\b2ki\your bot\bin\Debug\MyBot.pdb
 D:\Git_projects\KIPracticum1\b2ki\your bot\obj\x86\Debug\ResolveAssemblyReference.cache
 D:\Git_projects\KIPracticum1\b2ki\your bot\obj\x86\Debug\MyBot.exe
 D:\Git_projects\KIPracticum1\b2ki\your bot\obj\x86\Debug\MyBot.pdb
+D:\GitProjects\KIPracticum1\b2ki\your bot\bin\Debug\MyBot.exe
+D:\GitProjects\KIPracticum1\b2ki\your bot\bin\Debug\MyBot.pdb
+D:\GitProjects\KIPracticum1\b2ki\your bot\obj\x86\Debug\YourBot.csprojResolveAssemblyReference.cache
+D:\GitProjects\KIPracticum1\b2ki\your bot\obj\x86\Debug\MyBot.exe
+D:\GitProjects\KIPracticum1\b2ki\your bot\obj\x86\Debug\MyBot.pdb

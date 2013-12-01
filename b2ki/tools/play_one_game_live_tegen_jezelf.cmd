@@ -16,7 +16,7 @@ set PATH=%PATH%;C:\Program Files (x86)\Java\jre7\bin\
  --turntime=1000000 ^
  --map_file "%~dp0maps\maze\maze_04p_02.map" %* ^
  "%~dp0..\your bot\bin\Debug\MyBot.exe" ^
- "%~dp0..\Python\App\python.exe ""%~dp0sample_bots\python\LeftyBot.py""" ^
- "%~dp0..\Python\App\python.exe ""%~dp0sample_bots\python\HunterBot.py""" ^
- "%~dp0..\Python\App\python.exe ""%~dp0sample_bots\python\RandomBot.py""" | java.exe -jar visualizer.jar
+ "%~dp0..\your bot\bin\Debug\MyBot.exe" ^
+ "%~dp0..\your bot\bin\Debug\MyBot.exe" ^
+ "%~dp0..\your bot\bin\Debug\MyBot.exe" | java.exe -jar visualizer.jar
 

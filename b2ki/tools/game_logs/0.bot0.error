@@ -1,0 +1,47 @@
+turn   48 bot 0 ignored actions:
+o 15 65 n # move blocked
+turn   56 bot 0 ignored actions:
+o 5 71 e # move blocked
+turn   63 bot 0 ignored actions:
+o 6 71 w # move blocked
+turn   75 bot 0 ignored actions:
+o 48 85 n # move blocked
+turn   77 bot 0 ignored actions:
+o 47 85 s # move blocked
+turn   97 bot 0 ignored actions:
+o 10 81 n # move blocked
+turn  118 bot 0 ignored actions:
+o 5 85 e # move blocked
+turn  119 bot 0 ignored actions:
+o 4 79 e # move blocked
+turn  120 bot 0 ignored actions:
+o 3 63 e # move blocked
+turn  130 bot 0 ignored actions:
+o 8 79 e # move blocked
+turn  131 bot 0 ignored actions:
+o 10 67 s # move blocked
+turn  132 bot 0 ignored actions:
+o 14 72 n # move blocked
+turn  133 bot 0 ignored actions:
+o 55 81 n # move blocked
+turn  136 bot 0 ignored actions:
+o 11 81 s # move blocked
+turn  137 bot 0 ignored actions:
+o 14 89 e # move blocked
+turn  147 bot 0 ignored actions:
+o 16 28 s # move blocked
+o 26 1 s # move blocked
+turn  150 bot 0 ignored actions:
+o 56 58 w # move blocked
+turn  155 bot 0 ignored actions:
+o 56 59 n # move blocked
+turn  158 bot 0 ignored actions:
+o 3 64 n # move blocked
+turn  160 bot 0 ignored actions:
+o 56 58 n # move blocked
+turn  162 bot 0 ignored actions:
+o 38 60 s # move blocked
+turn  165 bot 0 ignored actions:
+o 59 57 s # move blocked
+turn  166 bot 0 ignored actions:
+o 2 62 n # move blocked
