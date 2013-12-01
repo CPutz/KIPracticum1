@@ -6,22 +6,20 @@ namespace Ants {
 	class MyBot : Bot {
 
         private DecisionMaker decision;
-        private List<Ant> onHill;
+        //private List<Ant> onHill;
 
         public MyBot() : base() {
             this.decision = new DecisionMaker();
         }
 
 
-
-
-
 		// DoTurn is run once per turn
 		public override void DoTurn (IGameState state) {
 
             this.decision.Update(state);
-            onHill = new List<Ant>();
+           // onHill = new List<Ant>();
 
+            new Location(7, 16);
 
             Search search1 = new Search(state, state.GetDistance,
                 (Location location) => { return state.GetIsUnoccupied(location) && !state.GetIsAttackable(location); });
@@ -34,11 +32,12 @@ namespace Ants {
             foreach (Ant ant in state.MyAnts) {
                 ant.IsWaitingFor++;
 
-                foreach (AntHill hill in state.MyHills) {
+
+                /*foreach (AntHill hill in state.MyHills) {
                     if (ant.Equals(hill)) {
                         onHill.Add(ant);
                     }
-                }
+                }*/
 
                 if (ant.Mode == AntMode.None) {
                     ant.Mode = this.decision.GetAntMode();
@@ -104,7 +103,7 @@ namespace Ants {
                         ant.Route = null;
                     }
 
-                    //if an ant in not in attack mode, avoid getting killed
+                    //if an ant in not in attack mode, avoid getting killed by calculating a better route
                     if (ant.Route != null && ant.Route.Count > 1) {
                         if (state.GetIsAttackable(ant.Route[1]) && ant.Mode != AntMode.Attack) {
                             ant.Route = null;
@@ -150,7 +149,7 @@ namespace Ants {
 
             HandleReservations(state);
 
-            foreach (Ant ant in onHill) {
+            /*foreach (Ant ant in onHill) {
                 bool b = false;
                 foreach (AntHill hill in state.MyHills) {
                     if (state.GetNextTurnLocation(ant).Equals(hill)) {
@@ -171,7 +170,7 @@ namespace Ants {
                         }
                     }
                 }
-            }
+            }*/
 		}
 
 

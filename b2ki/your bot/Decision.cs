@@ -11,9 +11,10 @@ namespace Ants {
         private const float k1 = 100;
         private const float k2 = 100;
 
-        //private IGameState state;
         private List<Location> targets;
         private List<Location> explorableTiles;
+
+        private List<Formation> formations;
 
         private Location target;
 
