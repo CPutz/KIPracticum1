@@ -2,11 +2,12 @@
 using System.Collections.Generic;
 
 namespace Ants {
-    class Formation : IEnumerable<Ant> {
+    public class Formation : IEnumerable<Ant> {
 
         public Direction Orientation { get; set; }
         public Ant Leader { get { return this.ants.First; } }
         public int Size { get { return this.ants.Size; } }
+        public Location Target { get; set; }
 
         private LinkedList<Ant> ants;
 

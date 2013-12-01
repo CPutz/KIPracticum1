@@ -10,6 +10,7 @@ namespace Ants {
 
         private const float k1 = 100;
         private const float k2 = 100;
+        private const int formationSize = 4;
 
         private List<Location> targets;
         private List<Location> explorableTiles;
@@ -26,6 +27,9 @@ namespace Ants {
             this.targets = new List<Location>();
             this.explorableTiles = new List<Location>();
             this.random = new Random();
+
+            this.formations = new List<Formation>();
+            this.formations.Add(new Formation());
         }
 
         public void AddTarget(Location target) {
@@ -105,6 +109,25 @@ namespace Ants {
         }
 
 
+        public void UpdateFormations(IGameState state) {
+            foreach (Formation formation in this.formations) {
+
+                if (formation.Size >= formationSize && formation.InFormation(state)) {
+                    formation.Target = target;
+                }
+
+                Ant leader = formation.Leader;
+                Ant last = null;
+                foreach (Ant ant in formation) {
+                    if (!ant.Equals(leader)) {
+                        ant.Target = last;
+                    }
+                    last = ant;
+                }
+            }
+        }
+
+
         public AntMode GetAntMode() {
             double num = random.NextDouble();
             if (num <= px)
@@ -116,23 +139,32 @@ namespace Ants {
         }
 
 
-        public Location GetTarget(Ant ant) {
+        public void SetTarget(Ant ant) {
             switch (ant.Mode) {
                 case AntMode.Explore:
                     if (explorableTiles.Count > 0) {
-                        return explorableTiles[random.Next(explorableTiles.Count)];
+                        ant.Target = explorableTiles[random.Next(explorableTiles.Count)];
                     }
                     break;
                 case AntMode.Attack:
                     if (target != null) {
-                        return target;
+                        
+                        //if the ant is in no formation, add it to a formation
+                        if (ant.Formation == null) {
+                            Formation f = formations[formations.Count - 1];
+                            if (f.Size > formationSize) {
+                                f = new Formation();
+                                formations.Add(f);
+                            }
+                            f.Add(ant);
+                            ant.Formation = f;
+                        }
+                        
                     } else if (explorableTiles.Count > 0) {
-                        return explorableTiles[random.Next(explorableTiles.Count)];
+                        ant.Target = explorableTiles[random.Next(explorableTiles.Count)];
                     }
                     break;
             }
-
-            return ant;
         }
     }
 }

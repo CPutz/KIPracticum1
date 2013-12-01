@@ -112,7 +112,7 @@ namespace Ants {
 
                     //if an ant has no target or waited for too long, get a new target
                     if (ant.Target == null || ant.IsWaitingFor > 2) {
-                        ant.Target = decision.GetTarget(ant);
+                        decision.SetTarget(ant);
                         ant.Route = null;
                     }
 
