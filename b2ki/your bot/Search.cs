@@ -25,7 +25,8 @@ namespace Ants {
 
         /// <summary>
         /// Searches for a path from <paramref name="source"/> to <paramref name="destination"/> using 
-        /// the A* algorithm with <paramref name="heuristic"/> as the heuristic function.
+        /// the A* algorithm with <paramref name="heuristic"/> as the heuristic function. A optional 
+        /// depth-limit (<paramref name="maxDistance"/> can be given.
         /// </summary>
         /// <param name="source">The start location.</param>
         /// <param name="destination">The destination location.</param>\

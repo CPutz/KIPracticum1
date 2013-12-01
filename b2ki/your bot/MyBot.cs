@@ -13,11 +13,7 @@ namespace Ants {
         }
 
 
-        //Formation formation;
 
-
-        //Ant onHill;
-        //int time;
 
 
 		// DoTurn is run once per turn
@@ -26,12 +22,14 @@ namespace Ants {
             this.decision.Update(state);
             onHill = new List<Ant>();
 
+
             Search search1 = new Search(state, state.GetDistance,
                 (Location location) => { return state.GetIsUnoccupied(location) && !state.GetIsAttackable(location); });
             Search search2 = new Search(state, state.GetDistance,
                 (Location location) => { return state.GetIsPassable(location) && !state.GetIsAttackable(location); });
             Search search3 = new Search(state, state.GetDistance, state.GetIsUnoccupied);
             Search search4 = new Search(state, state.GetDistance, state.GetIsPassable);
+
 
             foreach (Ant ant in state.MyAnts) {
                 ant.IsWaitingFor++;
@@ -45,28 +43,6 @@ namespace Ants {
                 if (ant.Mode == AntMode.None) {
                     ant.Mode = this.decision.GetAntMode();
                 }
-
-
-                /*if (ant.Equals(new Location(8, 16))) {
-                    if (onHill == null || ant.AntNumber != onHill.AntNumber) {
-                        onHill = ant;
-                        time = 0;
-                    } else {
-                        time++;
-                    }
-
-                }*/
-
-
-               /* if (ant.Mode == AntMode.Attack) {
-                    if (!formation.Contains(ant) && formation.Size < 5) {
-                        formation.Add(ant);
-                    } else {
-                        IssueOrder(state, ant, Direction.South);
-                    }
-                }
-
-                if (ant.Mode != AntMode.Attack) {*/
 
 
                 if (ant.Target2 == null) {
@@ -92,13 +68,8 @@ namespace Ants {
                 }
 
                 if (ant.Target2 != null) {
-                    if (state.GetDistance(ant, ant.Target2) <= 1) {
-                        ant.Target2 = null;
-                        ant.Route = null;
-                    }
 
-                    if (ant.Target2 != null && ant.Route2 == null) {
-
+                    if (ant.Route2 == null) {
                         //only get food if youre not gonna die for it, and if no other ant is in the way.
                         //and there exists a path to the food/hill which distance is less/eq to 1.5 times 
                         //the distance between the ant and the food/hill.
@@ -110,6 +81,7 @@ namespace Ants {
                         }
                     }
 
+                    //if the route2 is null after recalculation, drop the target
                     if (ant.Route2 == null) {
                         ant.Target2 = null;
                     } else {
@@ -132,37 +104,30 @@ namespace Ants {
                         ant.Route = null;
                     }
 
-                    if (ant.Target != null && ant.Route != null && ant.Route.Count > 1) {
+                    //if an ant in not in attack mode, avoid getting killed
+                    if (ant.Route != null && ant.Route.Count > 1) {
                         if (state.GetIsAttackable(ant.Route[1]) && ant.Mode != AntMode.Attack) {
                             ant.Route = null;
                         }
                     }
 
+                    //if an ant has no target or waited for too long, get a new target
                     if (ant.Target == null || ant.IsWaitingFor > 2) {
                         ant.Target = decision.GetTarget(ant);
                         ant.Route = null;
                     }
 
-                    if(ant.Route == null) {
+                    //if an ant has no route or the current route is not passable (crosses water), recalculate it
+                    if (ant.Route == null || ant.Route.Count > 1 && !state.GetIsPassable(ant.Route[1])) {
+
                         if (ant.Mode == AntMode.Attack) {
-                            ant.Route = search3.AStar(ant, ant.Target);
-                        } else {
+                            //calculate route using search1, if it fails, try search3
                             ant.Route = search1.AStar(ant, ant.Target);
-                        }
-                    }
-
-
-                    //IDEA: check whether route is ok for next k locations (k=10 for example).
-                    if ((ant.Route != null && ant.Route.Count > 1 && !state.GetIsPassable(ant.Route[1]))) {
-                        ant.Target = decision.GetTarget(ant);
-
-                        //if route using search1 or search3 is null, then try search2 or search4
-                        if (ant.Mode == AntMode.Attack) {
-                            ant.Route = search3.AStar(ant, ant.Target);
                             if (ant.Route == null) {
-                                ant.Route = search4.AStar(ant, ant.Target);
+                                ant.Route = search3.AStar(ant, ant.Target);
                             }
                         } else {
+                            //calculate route using search1, if it fails, try search2
                             ant.Route = search1.AStar(ant, ant.Target);
                             if (ant.Route == null) {
                                 ant.Route = search2.AStar(ant, ant.Target);
@@ -170,16 +135,16 @@ namespace Ants {
                         }
                     }
 
+                    //if the route is valid, 
                     if (ant.Route != null && ant.Route.Count > 1) {
                         IssueOrder(state, ant, DirectionFromPath(ant.Route, state));
                         ant.Route.RemoveAt(0); //ghetto
                     }
                 }
-                //}
 
 
 
-                if (state.TimeRemaining < 25) 
+                if (state.TimeRemaining < 10) 
                     break;
             }
 
