@@ -15,7 +15,7 @@ namespace Ants {
         private List<Location> targets;
         private List<Location> explorableTiles;
 
-        private List<Formation> formations;
+        public List<Formation> Formations { get; private set; }
 
         private Location target;
 
@@ -28,8 +28,8 @@ namespace Ants {
             this.explorableTiles = new List<Location>();
             this.random = new Random();
 
-            this.formations = new List<Formation>();
-            this.formations.Add(new Formation());
+            this.Formations = new List<Formation>();
+            this.Formations.Add(new Formation());
         }
 
         public void AddTarget(Location target) {
@@ -115,13 +115,13 @@ namespace Ants {
 
 
         public void UpdateFormations(IGameState state) {
-            foreach (Formation formation in this.formations) {
-
+            foreach (Formation formation in this.Formations) {
+                
                 if (formation.Size >= formationSize && formation.InFormation(state)) {
                     formation.Target = target;
                     formation.IsForming = false;
                 } else {
-                    if (formations.Count == 1 || formation == formations[1]) {
+                    if (Formations.Count == 1 || formation == Formations[1]) {
                         formation.Target = new Location(15, 11);
                     } else {
                         formation.Target = new Location(15, 9);
@@ -156,10 +156,10 @@ namespace Ants {
             } else if (num <= px + py) {
                 //if the ant is in no formation, add it to a formation
                 if (ant.Formation == null) {
-                    Formation f = formations[formations.Count - 1];
+                    Formation f = Formations[Formations.Count - 1];
                     if (f.Size >= formationSize) {
                         f = new Formation();
-                        formations.Add(f);
+                        Formations.Add(f);
                     }
                     f.Add(ant);
                     ant.Formation = f;
