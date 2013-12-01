@@ -8,12 +8,14 @@ namespace Ants {
         public Ant Leader { get { return this.ants.First; } }
         public int Size { get { return this.ants.Size; } }
         public Location Target { get; set; }
+        public bool IsForming { get; set; }
 
         private LinkedList<Ant> ants;
 
 
         public Formation() {
             this.ants = new LinkedList<Ant>();
+            this.IsForming = true;
         }
 
         public void Add(Ant ant) {

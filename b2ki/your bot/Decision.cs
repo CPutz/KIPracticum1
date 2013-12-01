@@ -54,18 +54,21 @@ namespace Ants {
 
             float fogFraction = (float)fog / (state.Width * state.Height);
 
-            x = k1 * fogFraction;
+            //x = k1 * fogFraction;
+            x = 0;
 
-            y = k2 * (1 - fogFraction) * targets.Count;
+            //y = k2 * (1 - fogFraction) * targets.Count;
+            y = 1;
 
             //z = (int)(state.MyAnts.Count / 10);
             z = 0;
 
             float sum = x + y + z;
-
-            this.px = x / sum;
-            this.py = y / sum;
-            this.pz = z / sum;
+            if (sum != 0) {
+                this.px = x / sum;
+                this.py = y / sum;
+                this.pz = z / sum;
+            }
 
             //check for new enemyhills
             foreach (AntHill hill in state.EnemyHills) {
@@ -106,6 +109,8 @@ namespace Ants {
             if (target == null && targets.Count != 0) {
                 target = targets[0];
             }
+
+            this.UpdateFormations(state);
         }
 
 
@@ -114,13 +119,29 @@ namespace Ants {
 
                 if (formation.Size >= formationSize && formation.InFormation(state)) {
                     formation.Target = target;
+                    formation.IsForming = false;
+                } else {
+                    if (formations.Count == 1 || formation == formations[1]) {
+                        formation.Target = new Location(15, 11);
+                    } else {
+                        formation.Target = new Location(15, 9);
+                    }
                 }
 
                 Ant leader = formation.Leader;
+                if (leader != null) {
+                    leader.Target = formation.Target;
+                }
+
                 Ant last = null;
                 foreach (Ant ant in formation) {
                     if (!ant.Equals(leader)) {
-                        ant.Target = last;
+                        //if the formation is forming, the ant should go to its location in the formation
+                        if (formation.IsForming) {
+                            ant.Target = state.GetDestination(last.Target, formation.Orientation);
+                        } else {
+                            ant.Target = last;
+                        }
                     }
                     last = ant;
                 }
@@ -128,14 +149,25 @@ namespace Ants {
         }
 
 
-        public AntMode GetAntMode() {
+        public void SetAntMode(Ant ant) {
             double num = random.NextDouble();
-            if (num <= px)
-                return AntMode.Explore;
-            else if (num <= px + py)
-                return AntMode.Attack;
-            else
-                return AntMode.Defend;
+            if (num <= px) {
+                ant.Mode = AntMode.Explore;
+            } else if (num <= px + py) {
+                //if the ant is in no formation, add it to a formation
+                if (ant.Formation == null) {
+                    Formation f = formations[formations.Count - 1];
+                    if (f.Size >= formationSize) {
+                        f = new Formation();
+                        formations.Add(f);
+                    }
+                    f.Add(ant);
+                    ant.Formation = f;
+                }
+                ant.Mode = AntMode.Attack;
+            } else {
+                ant.Mode = AntMode.Defend;
+            }
         }
 
 
@@ -149,16 +181,7 @@ namespace Ants {
                 case AntMode.Attack:
                     if (target != null) {
                         
-                        //if the ant is in no formation, add it to a formation
-                        if (ant.Formation == null) {
-                            Formation f = formations[formations.Count - 1];
-                            if (f.Size > formationSize) {
-                                f = new Formation();
-                                formations.Add(f);
-                            }
-                            f.Add(ant);
-                            ant.Formation = f;
-                        }
+                        
                         
                     } else if (explorableTiles.Count > 0) {
                         ant.Target = explorableTiles[random.Next(explorableTiles.Count)];
