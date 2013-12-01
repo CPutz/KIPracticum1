@@ -28,9 +28,10 @@ namespace Ants {
         /// the A* algorithm with <paramref name="heuristic"/> as the heuristic function.
         /// </summary>
         /// <param name="source">The start location.</param>
-        /// <param name="destination">The destination location.</param>
+        /// <param name="destination">The destination location.</param>\
+        /// <param name="maxDistance">The maximal distance that the algorithm will search from the source.</param>
         /// <returns>A Path from src to destination if it exists, otherwise <c>null</c></returns>
-        public List<Location> AStar(Location source, Location destination) {
+        public List<Location> AStar(Location source, Location destination, int maxDistance = int.MaxValue) {
 
             if (source != null && destination != null) {
 
@@ -65,7 +66,7 @@ namespace Ants {
 
                             //If neighbour in closedSet and F is worse than neighbour.F, or neighbour is not a passable block, then go to next neighbour.
                             if ((closedSet[neighbour.Row, neighbour.Col] != null && F >= closedSet[neighbour.Row, neighbour.Col].F) ||
-                                !isPassible(neighbour))
+                                !isPassible(neighbour) || G > maxDistance)
                                 continue;
 
                             bool notInOpen = !openSet.Contains(neighbour);

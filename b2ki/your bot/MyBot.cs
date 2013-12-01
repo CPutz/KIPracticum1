@@ -33,48 +33,6 @@ namespace Ants {
             Search search3 = new Search(state, state.GetDistance, state.GetIsUnoccupied);
             Search search4 = new Search(state, state.GetDistance, state.GetIsPassable);
 
-            /*foreach (Location loc in state.MyDeads) {
-                Ant ant = new Ant(loc.Row, loc.Col, 0, 0); //ghetto!!!
-                if (formation.Contains(ant)) {
-                    formation.Remove(ant);
-                }
-            }
-
-            if (formation == null) {
-                formation = new Formation();
-                formation.Orientation = Direction.North;
-            }
-
-            Ant leader = formation.Leader;
-            if (leader != null) {
-                leader.Target = new Location(15, 0);
-
-                if (formation.Size == 5 && formation.InFormation(state)) {
-                    Location loc = state.GetDestination(leader, Direction.South);
-                    if (state.GetIsUnoccupied(loc)) {
-                        IssueOrder(state, leader, Direction.South);
-                    }
-                } else {
-                    List<Location> path2 = s.AStar(leader, leader.Target);
-                    if (path2 != null && path2.Count > 1 && state.GetIsUnoccupied(path2[1])) {
-                        IssueOrder(state, leader, DirectionFromPath(path2, state));
-                    }
-                }
-            }
-
-            Ant prev = null;
-            foreach (Ant ant in formation) {
-                if (ant != leader) {
-                    ant.Target = state.GetDestination(prev.Target, formation.Orientation);
-                    List<Location> path = s.AStar(ant, ant.Target);
-                    if (path != null && path.Count > 1 && state.GetIsUnoccupied(path[1])) {
-                        IssueOrder(state, ant, DirectionFromPath(path, state));
-                    }
-                }
-                prev = ant;
-            }*/
-
-
             foreach (Ant ant in state.MyAnts) {
                 ant.IsWaitingFor++;
 
@@ -111,40 +69,14 @@ namespace Ants {
                 if (ant.Mode != AntMode.Attack) {*/
 
 
-
-                /*Location location = GetFoodHillTarget(ant, state);                
-
-                if (location != null) {
-
-                    //only get food if youre not gonna die for it, and if no other ant is in the way.
-                    List<Location> path = search1.AStar(ant, location);
-
-                    //only get food/hill when there exists a path to the food/hill which
-                    //distance is less/eq to two times the distance between the ant and the food/hill
-                    if (path != null && path.Count > 1 && path.Count <= state.GetDistance(ant, location) * 2) {
-                        IssueOrder(state, ant, DirectionFromPath(path, state));
-                        ant.Target2 = location;
-                        path.RemoveAt(0); //ghetto
-                        ant.Route2 = path;
-                    } else {
-                        location = null;
-                    }
-                }*/
-
-                //ant.Target2 = GetFoodHillTarget(ant, state);
-
                 if (ant.Target2 == null) {
                     int foodRadius2;
                     int foodRadius;
 
                     if (ant.Mode == AntMode.Attack) {
-                        //foodRadius2 = state.ViewRadius2 / 4;
-                        //foodRadius = state.ViewRadius / 2;
                         foodRadius = 2;
                         foodRadius2 = 4;
                     } else {
-                        //foodRadius2 = state.ViewRadius2;
-                        //foodRadius = state.ViewRadius;
                         foodRadius = 5;
                         foodRadius2 = 25;
                     }
@@ -160,20 +92,21 @@ namespace Ants {
                 }
 
                 if (ant.Target2 != null) {
-                    if (ant.Route2 == null) {
+                    if (state.GetDistance(ant, ant.Target2) <= 1) {
+                        ant.Target2 = null;
+                        ant.Route = null;
+                    }
+
+                    if (ant.Target2 != null && ant.Route2 == null) {
 
                         //only get food if youre not gonna die for it, and if no other ant is in the way.
-                        ant.Route2 = search1.AStar(ant, ant.Target2);
+                        //and there exists a path to the food/hill which distance is less/eq to 1.5 times 
+                        //the distance between the ant and the food/hill.
+                        ant.Route2 = search1.AStar(ant, ant.Target2, (int)(state.GetDistance(ant, ant.Target2) * 1.5));
 
-                        //remove the last node if its food
+                        //remove the last node if its food because we don't need to stand on it to get it.
                         if (ant.Route2 != null && state.FoodTiles.Contains(ant.Target2)) {
                             ant.Route2.RemoveAt(ant.Route2.Count - 1);
-                        }
-
-                        //only get food/hill when there exists a path to the food/hill which
-                        //distance is less/eq to two times the distance between the ant and the food/hill
-                        if (ant.Route2 != null && ant.Route2.Count > 1 && ant.Route2.Count > state.GetDistance(ant, ant.Target2) * 1.5) {
-                            ant.Route2 = null;
                         }
                     }
 
@@ -199,36 +132,22 @@ namespace Ants {
                         ant.Route = null;
                     }
 
-                    /*if (ant.Target != null && ant.Route != null && ant.Route.Count > 1) {
+                    if (ant.Target != null && ant.Route != null && ant.Route.Count > 1) {
                         if (state.GetIsAttackable(ant.Route[1]) && ant.Mode != AntMode.Attack) {
                             ant.Route = null;
                         }
-                    }*/
+                    }
 
-                    if (ant.Target == null || ant.IsWaitingFor > 10) {
+                    if (ant.Target == null || ant.IsWaitingFor > 2) {
                         ant.Target = decision.GetTarget(ant);
                         ant.Route = null;
                     }
 
                     if(ant.Route == null) {
-
-                        //if route using search1 or search3 is null, then try search2 or search4
                         if (ant.Mode == AntMode.Attack) {
                             ant.Route = search3.AStar(ant, ant.Target);
-                            /*if (ant.Route == null) {
-                                ant.Route = search4.AStar(ant, ant.Target);
-                            }*/
                         } else {
                             ant.Route = search1.AStar(ant, ant.Target);
-                            /*if (ant.Route == null) {
-                                ant.Route = search2.AStar(ant, ant.Target);
-                            }
-                            if (ant.Route == null) {
-                                ant.Route = search3.AStar(ant, ant.Target);
-                            }
-                            if (ant.Route == null) {
-                                ant.Route = search4.AStar(ant, ant.Target);
-                            }*/
                         }
                     }
 
@@ -240,22 +159,20 @@ namespace Ants {
                         //if route using search1 or search3 is null, then try search2 or search4
                         if (ant.Mode == AntMode.Attack) {
                             ant.Route = search3.AStar(ant, ant.Target);
-                            /*if (ant.Route == null) {
+                            if (ant.Route == null) {
                                 ant.Route = search4.AStar(ant, ant.Target);
-                            }*/
+                            }
                         } else {
                             ant.Route = search1.AStar(ant, ant.Target);
-                            /*if (ant.Route == null) {
+                            if (ant.Route == null) {
                                 ant.Route = search2.AStar(ant, ant.Target);
-                            }*/
+                            }
                         }
                     }
 
                     if (ant.Route != null && ant.Route.Count > 1) {
-                        //if (state.GetIsUnoccupied(ant.Route[1])) {
-                            IssueOrder(state, ant, DirectionFromPath(ant.Route, state));
-                            ant.Route.RemoveAt(0); //ghetto
-                        //}
+                        IssueOrder(state, ant, DirectionFromPath(ant.Route, state));
+                        ant.Route.RemoveAt(0); //ghetto
                     }
                 }
                 //}
@@ -316,7 +233,7 @@ namespace Ants {
             return location;
         }
 
-        /*private Location GetTargetFromMap(Ant ant, Map<Location> map, IGameState state) {
+        private Location GetTargetFromMap(Ant ant, Map<Location> map, IGameState state) {
             int distance = int.MaxValue;
             Location location = null;
 
@@ -360,7 +277,7 @@ namespace Ants {
             }
 
             return location;
-        }*/
+        }
 
 
         private Direction DirectionFromPath(List<Location> path, IGameState state) {
