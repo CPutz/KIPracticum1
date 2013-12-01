@@ -176,6 +176,13 @@ namespace Ants {
         /// <param name="direction">The direction the ant is moved in</param>
         void MoveAnt(Ant ant, Direction direction);
 
+        /// <summary>
+        /// Returns the position that the Ant <paramref name="ant"/> will be in the next turn.
+        /// </summary>
+        /// <param name="ant">The ant to be checked</param>
+        /// <returns>the position that the Ant <paramref name="ant"/> will be in the next turn.</returns>
+        Location GetNextTurnLocation(Ant ant);
+
 		bool GetIsVisible(Location loc);
 	}
 }

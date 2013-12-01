@@ -30,11 +30,11 @@ namespace Ants {
 		public void PlayGame(Bot bot) {
 
 			List<string> input = new List<string>();
-			
+
 			try {
 				while (true) {
 					string line = System.Console.In.ReadLine().Trim().ToLower();
-					
+
 					if (line.Equals(READY)) {
 						ParseSetup(input);
 						FinishTurn();
@@ -43,8 +43,9 @@ namespace Ants {
 						state.StartNewTurn();
 						ParseUpdate(input);
                         state.UpdateTurn();
-						bot.DoTurn(state);
-						FinishTurn();
+                        bot.StartNewTurn();
+                        bot.DoTurn(state);
+                        FinishTurn();
 						input.Clear();
 					} else if (line.Equals(END)) {
 						break;	

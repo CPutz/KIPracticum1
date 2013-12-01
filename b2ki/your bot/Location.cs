@@ -78,6 +78,11 @@ namespace Ants {
         public Location Target { get; set; }
         public List<Location> Route { get; set; }
         public AntMode Mode { get; set; }
+
+
+        public Location Target2 { get; set; }
+        public List<Location> Route2 { get; set; }
+
         
         //number of turns that an ant cannot move due to another ant standing in it's path
         public int IsWaitingFor { get; set; }
