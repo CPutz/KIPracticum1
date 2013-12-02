@@ -8,13 +8,8 @@ namespace Ants {
         private DecisionMaker decision;
         //private List<Ant> onHill;
 
-        public MyBot() : base() { }
-
-
-        
-
-        public void Initialize(IGameState state) {
-            this.decision = new DecisionMaker(state);
+        public MyBot() : base() {
+            this.decision = new DecisionMaker();
         }
 
 

@@ -8,6 +8,9 @@ namespace Ants {
 
     class DecisionMaker {
 
+        //The format in which the ants will be standing around the hill when defending.
+        //The order in which the locations are listed corresponds with the order in which the
+        //ants will stand around the hill.
         private static readonly Location[] defendFormat = { new Location(1, 1), new Location(-1, -1),
                                                             new Location(1, -1), new Location(-1, 1),
                                                             new Location(2, 1), new Location(-2, -1),
@@ -39,7 +42,7 @@ namespace Ants {
 
         private float px, py, pz;
 
-        public DecisionMaker(IGameState state) {
+        public DecisionMaker() {
             this.targets = new List<Location>();
             this.explorables = new List<Location>();
             this.random = new Random();
@@ -48,8 +51,21 @@ namespace Ants {
             //this.Formations.Add(new Formation());
 
             this.defending = new List<Ant>();
+        }
+
+        public void AddTarget(Location target) {
+            this.targets.Add(target);
+        }
+
+
+        /// <summary>
+        /// Updates priority parameters and much other stuff. Should be called every new turn.
+        /// </summary>
+        public void Update(IGameState state) {
 
             //initialize defend positions the first time
+            //(you do it here, because if we did it in a init method, then the MyHills List would be empty,
+            //because your hills get added in the first turn)
             if (defendPositions == null) {
                 defendPositions = new List<Location>();
 
@@ -62,17 +78,7 @@ namespace Ants {
                     }
                 }
             }
-        }
 
-        public void AddTarget(Location target) {
-            this.targets.Add(target);
-        }
-
-
-        /// <summary>
-        /// Updates priority parameters and much other stuff. Should be called every new turn.
-        /// </summary>
-        public void Update(IGameState state) {
 
             //determine the amount of fog of war
             int fog = 0;
