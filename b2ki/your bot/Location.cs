@@ -74,22 +74,25 @@ namespace Ants {
 	}
 	
 	public class Ant : TeamLocation, IEquatable<Ant> {
-        public int AntNumber { get; private set; }
+        public int Id { get; private set; }
         public Location Target { get; set; }
         public List<Location> Route { get; set; }
         public AntMode Mode { get; set; }
-        public Formation Formation { get; set; }
+
+
+        //public Formation Formation { get; set; }
+
 
         public Location Target2 { get; set; }
         public List<Location> Route2 { get; set; }
 
         
         //number of turns that an ant cannot move due to another ant standing in it's path
-        public int IsWaitingFor { get; set; }
+        public int WaitTime { get; set; }
 
-        public Ant (int row, int col, int team, int antNumber) : base (row, col, team) {
-            this.AntNumber = antNumber;
-            this.IsWaitingFor = 0;
+        public Ant (int row, int col, int team, int id) : base (row, col, team) {
+            this.Id = id;
+            this.WaitTime = 0;
 		}
 
         public void SetLocation(int row, int col) {

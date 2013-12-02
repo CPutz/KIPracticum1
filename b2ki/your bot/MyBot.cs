@@ -8,8 +8,13 @@ namespace Ants {
         private DecisionMaker decision;
         //private List<Ant> onHill;
 
-        public MyBot() : base() {
-            this.decision = new DecisionMaker();
+        public MyBot() : base() { }
+
+
+        
+
+        public void Initialize(IGameState state) {
+            this.decision = new DecisionMaker(state);
         }
 
 
@@ -17,7 +22,7 @@ namespace Ants {
 		public override void DoTurn (IGameState state) {
 
             this.decision.Update(state);
-           // onHill = new List<Ant>();
+            //onHill = new List<Ant>();
 
             Search search1 = new Search(state, state.GetDistance,
                 (Location location) => { return state.GetIsUnoccupied(location) && !state.GetIsAttackable(location); });
@@ -27,16 +32,17 @@ namespace Ants {
             Search search4 = new Search(state, state.GetDistance, state.GetIsPassable);
 
 
-            foreach (Formation formation in decision.Formations) {
+            /*foreach (Formation formation in decision.Formations) {
                 foreach (Ant ant in formation) {
                     DoStuffToAnt(ant, state, search1, search2, search3);
                 }
 
                 if (state.TimeRemaining < 10)
                     break;
-            }
+            }*/
 
             foreach (Ant ant in state.MyAnts) {
+
                 DoStuffToAnt(ant, state, search1, search2, search3);
 
                 if (state.TimeRemaining < 10) 
@@ -71,7 +77,7 @@ namespace Ants {
 
 
         private void DoStuffToAnt(Ant ant, IGameState state, Search search1, Search search2, Search search3) {
-            ant.IsWaitingFor++;
+            ant.WaitTime++;
 
 
             /*foreach (AntHill hill in state.MyHills) {
@@ -98,8 +104,7 @@ namespace Ants {
                 }
 
                 Location foodLocation = GetTargetFromMap(ant, state.FoodTiles, foodRadius2, foodRadius, state);
-                //Location hillLocation = GetTargetFromMap(ant, state.EnemyHills, state.ViewRadius2, state.ViewRadius, state);
-                Location hillLocation = null;
+                Location hillLocation = GetTargetFromMap(ant, state.EnemyHills, state.ViewRadius2, state.ViewRadius, state);
 
                 if (hillLocation != null) {
                     ant.Target2 = hillLocation;
@@ -110,9 +115,9 @@ namespace Ants {
 
             //an ant should not get food if it is in a formation that is not forming,
             //because then the formation will go out of formation
-            if (!ant.Formation.IsForming) {
+            /*if (!ant.Formation.IsForming) {
                 ant.Target2 = null;
-            }
+            }*/
 
             if (ant.Target2 != null) {
 
@@ -159,8 +164,8 @@ namespace Ants {
                 }
 
                 //if an ant has no target or waited for too long, get a new target (unless the ant is in a formation that is not forming)
-                if (ant.Target == null || ant.IsWaitingFor > 2) {
-                    decision.SetTarget(ant);
+                if (ant.Target == null || ant.WaitTime > 2) {
+                    decision.SetTarget(ant, state);
                     ant.Route = null;
                 }
 
@@ -270,10 +275,10 @@ namespace Ants {
 
 		
 		public static void Main (string[] args) {
-#if DEBUG
+/*#if DEBUG
             System.Diagnostics.Debugger.Launch();
             while (!System.Diagnostics.Debugger.IsAttached) { }
-#endif
+#endif*/
 
 			new Ants().PlayGame(new MyBot());
 		}

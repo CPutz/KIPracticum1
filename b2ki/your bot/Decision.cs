@@ -8,14 +8,30 @@ namespace Ants {
 
     class DecisionMaker {
 
-        private const float k1 = 100;
-        private const float k2 = 100;
-        private const int formationSize = 4;
+        private static readonly Location[] defendFormat = { new Location(1, 1), new Location(-1, -1),
+                                                            new Location(1, -1), new Location(-1, 1),
+                                                            new Location(2, 1), new Location(-2, -1),
+                                                            new Location(1, -2), new Location(-1, 2),
+                                                            new Location(1, 2), new Location(-1, -2),
+                                                            new Location(2, -1), new Location(-2, 1),
+                                                            new Location(2, 2), new Location(-2, -2),
+                                                            new Location(2, -2), new Location(-2, 2) };
+
+        private List<Location> defendPositions;
+
+        //constants that influence AntMode probabilities
+        private const float K1 = 100;
+        private const float K2 = 100;
+        private const float K3 = 50;
+
+        //private const int formationSize = 4;
 
         private List<Location> targets;
-        private List<Location> explorableTiles;
+        private List<Location> explorables;
 
-        public List<Formation> Formations { get; private set; }
+        private List<Ant> defending;
+
+        //public List<Formation> Formations { get; private set; }
 
         private Location target;
 
@@ -23,13 +39,29 @@ namespace Ants {
 
         private float px, py, pz;
 
-        public DecisionMaker() {
+        public DecisionMaker(IGameState state) {
             this.targets = new List<Location>();
-            this.explorableTiles = new List<Location>();
+            this.explorables = new List<Location>();
             this.random = new Random();
 
-            this.Formations = new List<Formation>();
-            this.Formations.Add(new Formation());
+            //this.Formations = new List<Formation>();
+            //this.Formations.Add(new Formation());
+
+            this.defending = new List<Ant>();
+
+            //initialize defend positions the first time
+            if (defendPositions == null) {
+                defendPositions = new List<Location>();
+
+                foreach (Location offset in defendFormat) {
+                    foreach (AntHill hill in state.MyHills) {
+                        Location location = state.GetDestination(hill, offset);
+                        if (state.GetIsPassable(location)) {
+                            defendPositions.Add(location);
+                        }
+                    }
+                }
+            }
         }
 
         public void AddTarget(Location target) {
@@ -38,11 +70,11 @@ namespace Ants {
 
 
         /// <summary>
-        /// Updates priority parameters. Should be called every new turn.
+        /// Updates priority parameters and much other stuff. Should be called every new turn.
         /// </summary>
         public void Update(IGameState state) {
-            float x, y, z;
 
+            //determine the amount of fog of war
             int fog = 0;
             for (int row = 0; row < state.Height; ++row) {
                 for (int col = 0; col < state.Width; ++col) {
@@ -54,15 +86,24 @@ namespace Ants {
 
             float fogFraction = (float)fog / (state.Width * state.Height);
 
-            //x = k1 * fogFraction;
-            x = 0;
+            float x, y, z;
 
-            //y = k2 * (1 - fogFraction) * targets.Count;
-            y = 1;
+            //The importance of Exploring.
+            //Depends on the amount of fog of war with respect to the map-size.
+            x = K1 * fogFraction;
 
-            //z = (int)(state.MyAnts.Count / 10);
-            z = 0;
+            //The importance of Attacking.
+            //Depens on the amount of fog of war with respect to the map-size and the number of possible targets.
+            y = K2 * (1 - fogFraction) * targets.Count;
 
+            //IDEA:number of defend has to go way up if there are very few ants defending
+
+            //The importance of Defending.
+            //Depends on the size of the ant population and the number of ants that are defending with respect
+            //to the maximal number of ants that can defend.
+            z = K3 * (int)(state.MyAnts.Count / 10) * (1 - (float)defending.Count / defendPositions.Count);
+
+            //calculate probibilities of choosing a certain AntMode
             float sum = x + y + z;
             if (sum != 0) {
                 this.px = x / sum;
@@ -70,24 +111,27 @@ namespace Ants {
                 this.pz = z / sum;
             }
 
-            //check for new enemyhills
+
+
+            //check for new enemyhills, if one exists: add it to the targets list
             foreach (AntHill hill in state.EnemyHills) {
                 if (!targets.Contains(hill)) {
                     targets.Add(hill);
                 }
             }
 
-            //calculate the explorable tiles
+            //clear and recalculate the explorable tiles
+            explorables.Clear();
             for (int row = 0; row < state.Height; ++row) {
                 for (int col = 0; col < state.Width; ++col) {
                     Location location = new Location(row, col);
                     if (state.GetIsUnoccupied(location) && !state.VisibilityMap[row, col] && !state.GetIsAttackable(location)) {
-                        explorableTiles.Add(location);
+                        explorables.Add(location);
                     }
                 }
             }
 
-            //check whether target is reached
+            //check whether target is reached, if so: clear it
             List<Location> toRemove = new List<Location>();
             foreach (Ant ant in state.MyAnts) {
                 foreach (Location t in targets) {
@@ -105,16 +149,16 @@ namespace Ants {
                 targets.Remove(loc);
             }
 
-            //choose new target
+            //choose new target if no current target exists
             if (target == null && targets.Count != 0) {
                 target = targets[0];
             }
 
-            this.UpdateFormations(state);
+            //this.UpdateFormations(state);
         }
 
 
-        public void UpdateFormations(IGameState state) {
+        /*public void UpdateFormations(IGameState state) {
             foreach (Formation formation in this.Formations) {
                 
                 if (formation.Size >= formationSize && formation.InFormation(state)) {
@@ -146,16 +190,20 @@ namespace Ants {
                     last = ant;
                 }
             }
-        }
+        }*/
 
 
+        /// <summary>
+        /// Sets the AntMode of <paramref name="ant"/>, according to the priorities of each task.
+        /// </summary>
+        /// <param name="ant">The ant the Mode has to be set for.</param>
         public void SetAntMode(Ant ant) {
             double num = random.NextDouble();
             if (num <= px) {
                 ant.Mode = AntMode.Explore;
             } else if (num <= px + py) {
                 //if the ant is in no formation, add it to a formation
-                if (ant.Formation == null) {
+                /*if (ant.Formation == null) {
                     Formation f = Formations[Formations.Count - 1];
                     if (f.Size >= formationSize) {
                         f = new Formation();
@@ -163,31 +211,61 @@ namespace Ants {
                     }
                     f.Add(ant);
                     ant.Formation = f;
-                }
+                }*/
                 ant.Mode = AntMode.Attack;
             } else {
-                ant.Mode = AntMode.Defend;
+                if (defending.Count < defendPositions.Count) {
+                    defending.Add(ant);
+                    ant.Mode = AntMode.Defend;
+                }
             }
         }
 
 
-        public void SetTarget(Ant ant) {
+        /// <summary>
+        /// Sets the target of <paramref name="ant"/>, according to it's AntMode.
+        /// </summary>
+        /// <param name="ant">The ant the target has to be set for.</param>
+        /// <param name="state">The gamestate.</param>
+        public void SetTarget(Ant ant, IGameState state) {
             switch (ant.Mode) {
                 case AntMode.Explore:
-                    if (explorableTiles.Count > 0) {
-                        ant.Target = explorableTiles[random.Next(explorableTiles.Count)];
-                    }
+                    //choose random explore tile
+                    ant.Target = GetExplorable();
                     break;
                 case AntMode.Attack:
+                    //choose current target or random explore tile if no target exists
                     if (target != null) {
-                        
-                        
-                        
-                    } else if (explorableTiles.Count > 0) {
-                        ant.Target = explorableTiles[random.Next(explorableTiles.Count)];
+                        ant.Target = target;
+                    } else {
+                        ant.Target = GetExplorable();
                     }
                     break;
+                case AntMode.Defend:
+                    //choose a defend position
+                    if (defending.Contains(ant)) {
+                        int index = defending.IndexOf(ant);
+                        ant.Target = defendPositions[index];
+                    }
+                    break;
+                default:
+                    //choose a random explore tile
+                    ant.Target = GetExplorable();
+                    break;
             }
+        }
+
+
+        /// <summary>
+        /// Gets a explorable location.
+        /// </summary>
+        /// <returns>A location that is not visible, passible, and cannot be attacked in one turn if
+        /// there exists one, <c>null</c> otherwist.</returns>
+        public Location GetExplorable() {
+            if (explorables.Count > 0) {
+                return explorables[random.Next(explorables.Count)];
+            }
+            return null;
         }
     }
 }

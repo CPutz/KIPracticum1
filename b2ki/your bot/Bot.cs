@@ -20,12 +20,12 @@ namespace Ants {
             if (direction != Direction.None) {
                 //only walk if there's no other ant standing in that location
                 if (state.GetIsUnoccupied(state.GetDestination(ant, direction))) {
-                    ant.IsWaitingFor = 0;
+                    ant.WaitTime = 0;
                     state.MoveAnt(ant, direction);
                     System.Console.Out.WriteLine("o {0} {1} {2}", ant.Row, ant.Col, direction.ToChar());
                 } else {
                     reservations.Add(new Reservation(ant, direction));
-                    ant.IsWaitingFor++;
+                    ant.WaitTime++;
                 }
             }
 		}
@@ -34,7 +34,7 @@ namespace Ants {
             //only walk if there's no other ant standing in that location
             if (reservation.Direction != Direction.None &&
                 state.GetIsUnoccupied(state.GetDestination(reservation.Ant, reservation.Direction))) {
-                    reservation.Ant.IsWaitingFor = 0;
+                    reservation.Ant.WaitTime = 0;
                     state.MoveAnt(reservation.Ant, reservation.Direction);
                     System.Console.Out.WriteLine("o {0} {1} {2}", reservation.Ant.Row, reservation.Ant.Col, reservation.Direction.ToChar());
             } 

@@ -145,7 +145,6 @@ namespace Ants {
     }
 
 
-
     class LinkedList<T> : IEnumerable<T>
     {
         public T First {

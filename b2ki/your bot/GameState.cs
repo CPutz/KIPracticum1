@@ -358,7 +358,7 @@ namespace Ants {
         public Location GetNextTurnLocation(Ant ant) {
             foreach (Direction direction in Enum.GetValues(typeof(Direction))) {
                 Location loc = GetDestination(ant, direction);
-                if (this.myAntsTemp[loc.Row, loc.Col] != null && ant.AntNumber == this.myAntsTemp[loc.Row, loc.Col].AntNumber) {
+                if (this.myAntsTemp[loc.Row, loc.Col] != null && ant.Id == this.myAntsTemp[loc.Row, loc.Col].Id) {
                     return loc;
                 }
             }
