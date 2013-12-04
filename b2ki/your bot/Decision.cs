@@ -110,9 +110,9 @@ namespace Ants {
             z = K3 * (int)(state.MyAnts.Count / 10) * (1 - (float)defending.Count / defendPositions.Count);
 
 
-            x = 0;
-            y = 1;
-            z = 0;
+            //x = 0;
+            //y = 1;
+            //z = 0;
 
 
             //calculate probibilities of choosing a certain AntMode
