@@ -27,11 +27,6 @@ namespace Ants {
             Search search4 = new Search(state, state.GetDistance, state.GetIsPassable);
 
 
-            if (state.Turn == 74) {
-                int test = 2;
-            }
-
-
             foreach (Formation formation in decision.Formations) {
 
                 if (!formation.IsForming) {
@@ -51,8 +46,12 @@ namespace Ants {
                                 Ant last = null;
                                 foreach (Ant ant in formation) {
                                     if (!ant.Equals(leader)) {
-                                        Location location = state.GetDestination(state.GetNextTurnLocation(last), formation.Orientation);
-                                        List<Location> path = search1.AStar(ant, location, 5);
+                                        Location nextTurnLocation = state.GetNextTurnLocation(last);
+                                        Location location = state.GetDestination(nextTurnLocation, formation.Orientation);
+                                        List<Location> path = search3.AStar(ant, location, 2);
+                                        if (path == null) {
+                                            path = search4.AStar(ant, nextTurnLocation, 2);
+                                        }
                                         IssueOrder(state, ant, DirectionFromPath(path, state));
                                     }
                                     last = ant;
