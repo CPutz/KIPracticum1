@@ -27,18 +27,53 @@ namespace Ants {
             Search search4 = new Search(state, state.GetDistance, state.GetIsPassable);
 
 
-            /*foreach (Formation formation in decision.Formations) {
-                foreach (Ant ant in formation) {
-                    DoStuffToAnt(ant, state, search1, search2, search3);
+            if (state.Turn == 74) {
+                int test = 2;
+            }
+
+
+            foreach (Formation formation in decision.Formations) {
+
+                if (!formation.IsForming) {
+                    Ant leader = formation.Leader;
+
+                    if (leader != null) {
+                        if (leader.Route == null) {
+                            leader.Route = search3.AStar(leader, leader.Target);
+                        }
+                        if (leader.Route != null) {
+                            //then the leader can walk
+                            if (leader.Route.Count > 1 && state.GetIsUnoccupied(leader.Route[1])) {
+
+                                IssueOrder(state, leader, DirectionFromPath(leader.Route, state));
+                                leader.Route.RemoveAt(0); //ghetto
+
+                                Ant last = null;
+                                foreach (Ant ant in formation) {
+                                    if (!ant.Equals(leader)) {
+                                        List<Location> path = search1.AStar(ant, last, 5);
+                                        IssueOrder(state, ant, DirectionFromPath(path, state));
+                                    }
+                                    last = ant;
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    foreach (Ant ant in formation) {
+                        DoStuffToAnt(ant, state, search1, search2, search3);
+                    }
                 }
 
                 if (state.TimeRemaining < 10)
                     break;
-            }*/
+            }
 
             foreach (Ant ant in state.MyAnts) {
 
-                DoStuffToAnt(ant, state, search1, search2, search3);
+                if (ant.Formation == null) {
+                    DoStuffToAnt(ant, state, search1, search2, search3);
+                }
 
                 if (state.TimeRemaining < 10) 
                     break;
@@ -227,10 +262,10 @@ namespace Ants {
 
 		
 		public static void Main (string[] args) {
-/*#if DEBUG
+#if DEBUG
             System.Diagnostics.Debugger.Launch();
             while (!System.Diagnostics.Debugger.IsAttached) { }
-#endif*/
+#endif
 
 			new Ants().PlayGame(new MyBot());
 		}

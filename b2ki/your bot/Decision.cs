@@ -27,14 +27,14 @@ namespace Ants {
         private const float K2 = 100;
         private const float K3 = 50;
 
-        //private const int formationSize = 4;
+        private const int formationSize = 4;
 
         private List<Location> targets;
         private List<Location> explorables;
 
         private List<Ant> defending;
 
-        //public List<Formation> Formations { get; private set; }
+        public List<Formation> Formations { get; private set; }
 
         private Location target;
 
@@ -47,8 +47,8 @@ namespace Ants {
             this.explorables = new List<Location>();
             this.random = new Random();
 
-            //this.Formations = new List<Formation>();
-            //this.Formations.Add(new Formation());
+            this.Formations = new List<Formation>();
+            this.Formations.Add(new Formation());
 
             this.defending = new List<Ant>();
         }
@@ -103,11 +103,17 @@ namespace Ants {
             y = K2 * (1 - fogFraction) * targets.Count;
 
             //IDEA:number of defend has to go way up if there are very few ants defending
-
+            
             //The importance of Defending.
             //Depends on the size of the ant population and the number of ants that are defending with respect
             //to the maximal number of ants that can defend.
             z = K3 * (int)(state.MyAnts.Count / 10) * (1 - (float)defending.Count / defendPositions.Count);
+
+
+            x = 0;
+            y = 1;
+            z = 0;
+
 
             //calculate probibilities of choosing a certain AntMode
             float sum = x + y + z;
@@ -161,7 +167,7 @@ namespace Ants {
             }
 
 
-            //this.UpdateFormations(state);
+            this.UpdateFormations(state);
         }
 
 
@@ -172,17 +178,20 @@ namespace Ants {
         }
 
 
-        /*public void UpdateFormations(IGameState state) {
+        public void UpdateFormations(IGameState state) {
+
             foreach (Formation formation in this.Formations) {
                 
                 if (formation.Size >= formationSize && formation.InFormation(state)) {
-                    formation.Target = target;
+                    //formation.Target = target;
+                    formation.Target = new Location(48, 3);
                     formation.IsForming = false;
+                    formation.Leader.Route = null;
                 } else {
                     if (Formations.Count == 1 || formation == Formations[1]) {
-                        formation.Target = new Location(15, 11);
+                        formation.Target = new Location(106, 5);
                     } else {
-                        formation.Target = new Location(15, 9);
+                        formation.Target = new Location(106, 7);
                     }
                 }
 
@@ -204,7 +213,7 @@ namespace Ants {
                     last = ant;
                 }
             }
-        }*/
+        }
 
 
         /// <summary>
@@ -217,7 +226,7 @@ namespace Ants {
                 ant.Mode = AntMode.Explore;
             } else if (num <= px + py) {
                 //if the ant is in no formation, add it to a formation
-                /*if (ant.Formation == null) {
+                if (ant.Formation == null) {
                     Formation f = Formations[Formations.Count - 1];
                     if (f.Size >= formationSize) {
                         f = new Formation();
@@ -225,7 +234,7 @@ namespace Ants {
                     }
                     f.Add(ant);
                     ant.Formation = f;
-                }*/
+                }
                 ant.Mode = AntMode.Attack;
             } else {
                 if (defending.Count < defendPositions.Count) {
@@ -249,11 +258,11 @@ namespace Ants {
                     break;
                 case AntMode.Attack:
                     //choose current target or random explore tile if no target exists
-                    if (target != null) {
+                    /*if (target != null) {
                         ant.Target = target;
                     } else {
                         ant.Target = GetExplorable(ant, state);
-                    }
+                    }*/
                     break;
                 case AntMode.Defend:
                     //choose a defend position

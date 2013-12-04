@@ -80,7 +80,7 @@ namespace Ants {
         public AntMode Mode { get; set; }
 
 
-        //public Formation Formation { get; set; }
+        public Formation Formation { get; set; }
 
 
         public Location Target2 { get; set; }
