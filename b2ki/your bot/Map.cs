@@ -9,7 +9,7 @@ namespace Ants {
     public class Map<T> : IEnumerable<T> where T : Location {
         public int Width { get; private set; }
         public int Height { get; private set; }
-        public int Size { get { return items.Count; } }
+        public int Count { get { return items.Count; } }
 
         private bool[,] map;
         private List<T> items;
@@ -22,12 +22,20 @@ namespace Ants {
             this.items = new List<T>();
         }
 
+        public T this[int index] {
+            get { return items[index]; }
+        }
+
         public bool Contains(Location loc) {
             return map[loc.Row, loc.Col];
         }
 
         public bool Contains(int row, int col) {
             return map[row, col];
+        }
+
+        public int IndexOf(T item) {
+            return items.IndexOf(item);
         }
 
         public void Add(T item) {

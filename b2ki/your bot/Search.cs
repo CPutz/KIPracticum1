@@ -34,11 +34,11 @@ namespace Ants {
         /// <returns>A Path from src to destination if it exists, otherwise <c>null</c></returns>
         public List<Location> AStar(Location source, Location destination, int maxDistance = int.MaxValue) {
 
-            if (destination is Ant) {
-                destination = gameState.GetNextTurnLocation((Ant)destination);
-            }
-
             if (source != null && destination != null) {
+
+                /*if (destination is Ant) {
+                    destination = gameState.GetNextTurnLocation((Ant)destination);
+                }*/
 
                 AStarOpenSet openSet = new AStarOpenSet(this.Width, this.Height);
                 AStarNode<Location>[,] closedSet = new AStarNode<Location>[this.Height, this.Width];

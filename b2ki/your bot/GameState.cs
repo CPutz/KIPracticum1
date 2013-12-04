@@ -300,9 +300,15 @@ namespace Ants {
 		/// </summary>
 		/// <param name="loc1">The first location to measure with.</param>
 		/// <param name="loc2">The second location to measure with.</param>
-		/// <returns>The distance between <paramref name="loc1"/> and <paramref name="loc2"/></returns>
+		/// <returns>The distance between <paramref name="loc1"/> and <paramref name="loc2"/> if both are not <c>null</c>,
+        /// otherwise <c>int.MaxValue</c>.</returns>
 		public int GetDistance (Location loc1, Location loc2) {
-			int d_row = Math.Abs(loc1.Row - loc2.Row);
+			if (loc1 == null || loc2 == null) {
+                return int.MaxValue;
+            }
+            
+            
+            int d_row = Math.Abs(loc1.Row - loc2.Row);
 			d_row = Math.Min(d_row, Height - d_row);
 			
 			int d_col = Math.Abs(loc1.Col - loc2.Col);

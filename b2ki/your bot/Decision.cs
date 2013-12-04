@@ -160,7 +160,15 @@ namespace Ants {
                 target = targets[0];
             }
 
+
             //this.UpdateFormations(state);
+        }
+
+
+        public void UpdateDefendings() {
+            for (int i = 0; i < defending.Count; ++i) {
+                defending[i].Target = defendPositions[i];
+            }
         }
 
 
@@ -237,14 +245,14 @@ namespace Ants {
             switch (ant.Mode) {
                 case AntMode.Explore:
                     //choose random explore tile
-                    ant.Target = GetExplorable();
+                    ant.Target = GetExplorable(ant, state);
                     break;
                 case AntMode.Attack:
                     //choose current target or random explore tile if no target exists
                     if (target != null) {
                         ant.Target = target;
                     } else {
-                        ant.Target = GetExplorable();
+                        ant.Target = GetExplorable(ant, state);
                     }
                     break;
                 case AntMode.Defend:
@@ -256,7 +264,7 @@ namespace Ants {
                     break;
                 default:
                     //choose a random explore tile
-                    ant.Target = GetExplorable();
+                    ant.Target = GetExplorable(ant, state);
                     break;
             }
         }
@@ -267,11 +275,18 @@ namespace Ants {
         /// </summary>
         /// <returns>A location that is not visible, passible, and cannot be attacked in one turn if
         /// there exists one, <c>null</c> otherwist.</returns>
-        public Location GetExplorable() {
+        public Location GetExplorable(Ant ant, IGameState state) {
+            Location location = null;
+
             if (explorables.Count > 0) {
-                return explorables[random.Next(explorables.Count)];
+                for (int i = 0; i < 5; ++i) {
+                    location = explorables[random.Next(explorables.Count)];
+                    if (state.GetDistance(location, ant) <= 30) {
+                        return location;
+                    }
+                }
             }
-            return null;
+            return location;
         }
     }
 }

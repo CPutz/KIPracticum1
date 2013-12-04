@@ -44,7 +44,9 @@ namespace Ants {
                     break;
             }
 
-            HandleReservations(state);
+            if (state.TimeRemaining >= 10) {
+                HandleReservations(state);
+            }
 
             /*foreach (Ant ant in onHill) {
                 bool b = false;
@@ -73,7 +75,6 @@ namespace Ants {
 
         private void DoStuffToAnt(Ant ant, IGameState state, Search search1, Search search2, Search search3) {
             ant.WaitTime++;
-
 
             /*foreach (AntHill hill in state.MyHills) {
                 if (ant.Equals(hill)) {
@@ -167,17 +168,19 @@ namespace Ants {
                 //if an ant has no route or the current route is not passable (crosses water), recalculate it
                 if (ant.Route == null || ant.Route.Count > 1 && !state.GetIsPassable(ant.Route[1])) {
 
+                    int distance = state.GetDistance(ant, ant.Target);
+
                     if (ant.Mode == AntMode.Attack) {
                         //calculate route using search1, if it fails, try search3
-                        ant.Route = search1.AStar(ant, ant.Target);
+                        ant.Route = search1.AStar(ant, ant.Target, distance * 2);
                         if (ant.Route == null) {
-                            ant.Route = search3.AStar(ant, ant.Target);
+                            ant.Route = search3.AStar(ant, ant.Target, distance * 2);
                         }
                     } else {
                         //calculate route using search1, if it fails, try search2
-                        ant.Route = search1.AStar(ant, ant.Target);
+                        ant.Route = search1.AStar(ant, ant.Target, distance * 2);
                         if (ant.Route == null) {
-                            ant.Route = search2.AStar(ant, ant.Target);
+                            ant.Route = search2.AStar(ant, ant.Target, distance * 2);
                         }
                     }
                 }
@@ -204,52 +207,6 @@ namespace Ants {
                         if (map.Contains(loc)) {
                             int tempDistance = state.GetDistance(ant, loc);
                             if (tempDistance < distance) {
-                                location = loc;
-                            }
-                        }
-                    }
-                }
-            }
-
-            return location;
-        }
-
-        private Location GetTargetFromMap(Ant ant, Map<Location> map, IGameState state) {
-            int distance = int.MaxValue;
-            Location location = null;
-
-            bool getHill = false;
-
-            int foodRadius2;
-            int foodRadius;
-
-            if (ant.Mode == AntMode.Attack) {
-                foodRadius2 = state.ViewRadius2 / 4;
-                foodRadius = state.ViewRadius / 2;
-            } else {
-                foodRadius2 = state.ViewRadius2;
-                foodRadius = state.ViewRadius;
-            }
-
-            for (int r = -1 * foodRadius; r <= foodRadius; ++r) {
-                for (int c = -1 * foodRadius; c <= foodRadius; ++c) {
-                    int square = r * r + c * c;
-                    if (square <= foodRadius2) {
-                        Location loc = state.GetDestination(ant, new Location(r, c));
-
-                        if (state.EnemyHills.Contains(loc)) {
-                            int tempDistance = state.GetDistance(ant, loc);
-                            if (!getHill || tempDistance < distance) {
-                                location = loc;
-                            }
-
-                            getHill = true;
-
-                        } else if (state.FoodTiles.Contains(loc) && !getHill) {
-                            int tempDistance = state.GetDistance(ant, loc);
-
-                            if (tempDistance < distance) {
-                                distance = tempDistance;
                                 location = loc;
                             }
                         }
