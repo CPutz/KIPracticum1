@@ -51,7 +51,8 @@ namespace Ants {
                                 Ant last = null;
                                 foreach (Ant ant in formation) {
                                     if (!ant.Equals(leader)) {
-                                        List<Location> path = search1.AStar(ant, last, 5);
+                                        Location location = state.GetDestination(state.GetNextTurnLocation(last), formation.Orientation);
+                                        List<Location> path = search1.AStar(ant, location, 5);
                                         IssueOrder(state, ant, DirectionFromPath(path, state));
                                     }
                                     last = ant;

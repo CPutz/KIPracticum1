@@ -189,7 +189,8 @@ namespace Ants {
                     formation.Leader.Route = null;
                 } else {
                     if (Formations.Count == 1 || formation == Formations[1]) {
-                        formation.Target = new Location(106, 5);
+                        formation.Target = new Location(106, 3);
+                        formation.Orientation = Direction.East;
                     } else {
                         formation.Target = new Location(106, 7);
                     }
