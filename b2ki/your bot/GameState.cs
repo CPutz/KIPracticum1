@@ -30,7 +30,7 @@ namespace Ants {
 		public List<AntHill> MyHills { get; private set; }
 		public Map<Ant> EnemyAnts { get; private set; }
 		public Map<AntHill> EnemyHills { get; private set; }
-        public List<Location> MyDeads { get; private set; }
+        public List<Ant> MyDeads { get; private set; }
 		public List<Location> EnemyDeads { get; private set; }
 		public Map<Location> FoodTiles { get; private set; }
 
@@ -72,7 +72,7 @@ namespace Ants {
 			MyHills = new List<AntHill>();
 			EnemyAnts = new Map<Ant>(Width, Height);
 			EnemyHills = new Map<AntHill>(Width, Height);
-			MyDeads = new List<Location>();
+			MyDeads = new List<Ant>();
             EnemyDeads = new List<Location>();
 			FoodTiles = new Map<Location>(Width, Height);
 
@@ -158,19 +158,21 @@ namespace Ants {
                 ant = new Ant(row, col, team, 0);
                 EnemyAnts.Add(ant);
 
-                //Direction.None IS ALSO CHECKED BUT SHOULDN'T BE...
+                //calculate enemy attack map
                 foreach (Direction direction in Enum.GetValues(typeof(Direction))) {
-                    Location newLocation = GetDestination(ant, direction);
+                    if (direction != Direction.None) {
+                        Location newLocation = GetDestination(ant, direction);
 
-                    for (int r = -1 * AttackRadius; r <= AttackRadius; ++r) {
-                        for (int c = -1 * AttackRadius; c <= AttackRadius; ++c) {
-                            int square = r * r + c * c;
-                            if (square <= AttackRadius2) {
-                                Location loc = GetDestination(newLocation, new Location(r, c));
+                        for (int r = -1 * AttackRadius; r <= AttackRadius; ++r) {
+                            for (int c = -1 * AttackRadius; c <= AttackRadius; ++c) {
+                                int square = r * r + c * c;
+                                if (square <= AttackRadius2) {
+                                    Location loc = GetDestination(newLocation, new Location(r, c));
 
-                                if (GetIsPassable(loc)) {
-                                    //add visible locations to visibilitymap
-                                    EnemyAttackMap[loc.Row, loc.Col] = true;
+                                    if (GetIsPassable(loc)) {
+                                        //add visible locations to visibilitymap
+                                        EnemyAttackMap[loc.Row, loc.Col] = true;
+                                    }
                                 }
                             }
                         }
@@ -206,7 +208,10 @@ namespace Ants {
 			
 			// but always add to the dead list
             if (team == 0) {
-                MyDeads.Add(new Location(row, col));
+                Ant dead = myAntsTemp[row, col];
+                if (dead != null) {
+                    MyDeads.Add(dead);
+                }
             } else {
                 EnemyDeads.Add(new Location(row, col));
             }
@@ -271,9 +276,13 @@ namespace Ants {
 		/// </summary>
 		/// <param name="location">The starting location.</param>
 		/// <param name="direction">The direction to move.</param>
-		/// <returns>The new location, accounting for wrap around.</returns>
+		/// <returns>The new location, accounting for wrap around if location is not <c>null</c>, null otherwise.</returns>
 		public Location GetDestination (Location location, Direction direction) {
-			Location delta = Ants.Aim[direction];
+            if (location == null) {
+                return null;
+            }
+
+            Location delta = Ants.Aim[direction];
 			
 			int row = (location.Row + delta.Row) % Height;
 			if (row < 0) row += Height; // because the modulo of a negative number is negative
@@ -322,17 +331,22 @@ namespace Ants {
 		/// </summary>
 		/// <param name="loc1">The location to start from.</param>
 		/// <param name="loc2">The location to determine directions towards.</param>
-		/// <returns>The 1 or 2 closest directions from <paramref name="loc1"/> to <paramref name="loc2"/></returns>
+		/// <returns>The 1 or 2 closest directions from <paramref name="loc1"/> to <paramref name="loc2"/>, sorted
+        /// by importance, so the most dominant direction is added first.</returns>
 		public ICollection<Direction> GetDirections (Location loc1, Location loc2) {
 			List<Direction> directions = new List<Direction>();
+            int rowDiff = 0;
+            int colDiff = 0;
 
 			if (loc1.Row < loc2.Row) {
+                rowDiff = loc2.Row - loc1.Row;
 				if (loc2.Row - loc1.Row >= Height / 2)
 					directions.Add(Direction.North);
 				if (loc2.Row - loc1.Row <= Height / 2)
 					directions.Add(Direction.South);
 			}
 			if (loc2.Row < loc1.Row) {
+                rowDiff = loc1.Row - loc2.Row;
 				if (loc1.Row - loc2.Row >= Height / 2)
 					directions.Add(Direction.South);
 				if (loc1.Row - loc2.Row <= Height / 2)
@@ -340,17 +354,25 @@ namespace Ants {
 			}
 			
 			if (loc1.Col < loc2.Col) {
+                colDiff = loc2.Col - loc1.Col;
 				if (loc2.Col - loc1.Col >= Width / 2)
 					directions.Add(Direction.West);
 				if (loc2.Col - loc1.Col <= Width / 2)
 					directions.Add(Direction.East);
 			}
 			if (loc2.Col < loc1.Col) {
+                colDiff = loc1.Col - loc2.Col;
 				if (loc1.Col - loc2.Col >= Width / 2)
 					directions.Add(Direction.East);
 				if (loc1.Col - loc2.Col <= Width / 2)
 					directions.Add(Direction.West);
 			}
+
+            if (rowDiff > colDiff) {
+                //do nothing
+            } else {
+                directions.Reverse();
+            }
 			
 			return directions;
 		}

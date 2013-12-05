@@ -30,6 +30,10 @@ namespace Ants {
             return (this.ants.Search(ant) != null);
         }
 
+        public void Reverse() {
+            ants.Reverse();
+        }
+
         //returns whether the group is currently in formation
         public bool InFormation(IGameState state) {
             Ant prev = null;

@@ -82,7 +82,7 @@ namespace Ants {
         /// <summary>
         /// Gets a list of currently-visible locations where ants of our team died last turn.
         /// </summary>
-        List<Location> MyDeads { get; }
+        List<Ant> MyDeads { get; }
 
 		/// <summary>
 		/// Gets a list of currently-visible locations where enemy ants died last turn.

@@ -187,8 +187,9 @@ namespace Ants {
                     }
                     if (x == last) {
                         last = prev;
-                    } 
+                    }
 
+                    this.Size--;
                     return true;
                 }
 
@@ -212,6 +213,30 @@ namespace Ants {
 
             return default(T);
         }
+
+
+        public void Reverse() {
+            LLElement<T> x = this.head;
+
+            Stack<LLElement<T>> s = new Stack<LLElement<T>>(this.Size);
+
+            while (x != null) {
+                s.Push(x);
+                x = x.Next;
+            }
+
+            x = s.Pop();
+            this.head = x;
+
+            while (s.Count > 0) {
+                x.Next = s.Pop();
+                x = x.Next;
+            }
+
+            x.Next = null;
+            this.last = x;
+        }
+
 
         public IEnumerator<T> GetEnumerator() {
             LLElement<T> x = this.head;

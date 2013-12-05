@@ -34,29 +34,55 @@ namespace Ants {
 
                     if (leader != null) {
                         if (leader.Route == null) {
-                            leader.Route = search3.AStar(leader, leader.Target);
+                            leader.Route = search4.AStar(leader, leader.Target);
                         }
                         if (leader.Route != null) {
                             //then the leader can walk
-                            if (leader.Route.Count > 1 && state.GetIsUnoccupied(leader.Route[1])) {
+                            if (leader.Route.Count > 1) {
 
-                                IssueOrder(state, leader, DirectionFromPath(leader.Route, state));
-                                leader.Route.RemoveAt(0); //ghetto
+                                Direction direction = DirectionFromPath(leader.Route, state);
 
-                                Ant last = null;
-                                foreach (Ant ant in formation) {
-                                    if (!ant.Equals(leader)) {
-                                        Location nextTurnLocation = state.GetNextTurnLocation(last);
-                                        Location location = state.GetDestination(nextTurnLocation, formation.Orientation);
-                                        List<Location> path = search3.AStar(ant, location, 2);
-                                        if (path == null) {
-                                            path = search4.AStar(ant, nextTurnLocation, 2);
+                                if (state.GetIsUnoccupied(leader.Route[1])) {
+                                    IssueOrder(state, leader, direction);
+                                    leader.Route.RemoveAt(0); //ghetto
+
+                                    Ant last = null;
+                                    foreach (Ant ant in formation) {
+                                        if (!ant.Equals(leader)) {
+                                            Location nextTurnLocation = state.GetNextTurnLocation(last);
+                                            Location location = state.GetDestination(nextTurnLocation, formation.Orientation);
+                                            List<Location> path = search3.AStar(ant, location, 2);
+                                            if (path == null) {
+                                                path = search4.AStar(ant, nextTurnLocation, 2);
+                                            }
+                                            IssueOrder(state, ant, DirectionFromPath(path, state));
                                         }
-                                        IssueOrder(state, ant, DirectionFromPath(path, state));
+                                        last = ant;
                                     }
-                                    last = ant;
+                                } else {
+                                    //if the formation is travalling in the same direction as it's orientation, switch leaders
+                                    //because otherwise, the leader will always walk into the formation, forming problems
+                                    if (formation.Orientation == direction) {
+                                        formation.Reverse();
+
+                                        //change orientation because the formation is flipped
+                                        switch (formation.Orientation) {
+                                            case Direction.North:
+                                                formation.Orientation = Direction.South;
+                                                break;
+                                            case Direction.South:
+                                                formation.Orientation = Direction.North;
+                                                break;
+                                            case Direction.East:
+                                                formation.Orientation = Direction.West;
+                                                break;
+                                            case Direction.West:
+                                                formation.Orientation = Direction.East;
+                                                break;
+                                        }
+                                    }
                                 }
-                            }
+                            } 
                         }
                     }
                 } else {
@@ -122,59 +148,62 @@ namespace Ants {
             }
 
 
-            if (ant.Target2 == null) {
-                int foodRadius2;
-                int foodRadius;
+            //defending ants should never get food or hills.
+            if (ant.Mode != AntMode.Defend) {
+                if (ant.Target2 == null) {
+                    int foodRadius2;
+                    int foodRadius;
 
-                if (ant.Mode == AntMode.Attack) {
-                    foodRadius = 2;
-                    foodRadius2 = 4;
-                } else {
-                    foodRadius = 5;
-                    foodRadius2 = 25;
-                }
+                    if (ant.Mode == AntMode.Attack) {
+                        foodRadius = 2;
+                        foodRadius2 = 4;
+                    } else {
+                        foodRadius = 5;
+                        foodRadius2 = 25;
+                    }
 
-                Location foodLocation = GetTargetFromMap(ant, state.FoodTiles, foodRadius2, foodRadius, state);
-                Location hillLocation = GetTargetFromMap(ant, state.EnemyHills, state.ViewRadius2, state.ViewRadius, state);
+                    Location foodLocation = GetTargetFromMap(ant, state.FoodTiles, foodRadius2, foodRadius, state);
+                    Location hillLocation = GetTargetFromMap(ant, state.EnemyHills, state.ViewRadius2, state.ViewRadius, state);
 
-                if (hillLocation != null) {
-                    ant.Target2 = hillLocation;
-                } else {
-                    ant.Target2 = foodLocation;
-                }
-            }
-
-            //an ant should not get food if it is in a formation that is not forming,
-            //because then the formation will go out of formation
-            /*if (!ant.Formation.IsForming) {
-                ant.Target2 = null;
-            }*/
-
-            if (ant.Target2 != null) {
-
-                if (ant.Route2 == null) {
-                    //only get food if youre not gonna die for it, and if no other ant is in the way.
-                    //and there exists a path to the food/hill which distance is less/eq to 1.5 times 
-                    //the distance between the ant and the food/hill.
-                    ant.Route2 = search1.AStar(ant, ant.Target2, (int)(state.GetDistance(ant, ant.Target2) * 1.5));
-
-                    //remove the last node if its food because we don't need to stand on it to get it.
-                    if (ant.Route2 != null && state.FoodTiles.Contains(ant.Target2)) {
-                        ant.Route2.RemoveAt(ant.Route2.Count - 1);
+                    if (hillLocation != null) {
+                        ant.Target2 = hillLocation;
+                    } else {
+                        ant.Target2 = foodLocation;
                     }
                 }
 
-                //if the route2 is null after recalculation, drop the target
-                if (ant.Route2 == null) {
+                //an ant should not get food if it is in a formation that is not forming,
+                //because then the formation will go out of formation
+                /*if (!ant.Formation.IsForming) {
                     ant.Target2 = null;
-                } else {
-                    //only get food if no other ant is blocking it
-                    if (ant.Route2.Count > 1 && state.GetIsUnoccupied(ant.Route2[1])) {
-                        IssueOrder(state, ant, DirectionFromPath(ant.Route2, state));
-                        ant.Route2.RemoveAt(0); //ghetto
-                    } else {
+                }*/
+
+                if (ant.Target2 != null) {
+
+                    if (ant.Route2 == null) {
+                        //only get food if youre not gonna die for it, and if no other ant is in the way.
+                        //and there exists a path to the food/hill which distance is less/eq to 1.5 times 
+                        //the distance between the ant and the food/hill.
+                        ant.Route2 = search1.AStar(ant, ant.Target2, (int)(state.GetDistance(ant, ant.Target2) * 1.5));
+
+                        //remove the last node if its food because we don't need to stand on it to get it.
+                        if (ant.Route2 != null && state.FoodTiles.Contains(ant.Target2)) {
+                            ant.Route2.RemoveAt(ant.Route2.Count - 1);
+                        }
+                    }
+
+                    //if the route2 is null after recalculation, drop the target
+                    if (ant.Route2 == null) {
                         ant.Target2 = null;
-                        ant.Route2 = null;
+                    } else {
+                        //only get food if no other ant is blocking it
+                        if (ant.Route2.Count > 1 && state.GetIsUnoccupied(ant.Route2[1])) {
+                            IssueOrder(state, ant, DirectionFromPath(ant.Route2, state));
+                            ant.Route2.RemoveAt(0); //ghetto
+                        } else {
+                            ant.Target2 = null;
+                            ant.Route2 = null;
+                        }
                     }
                 }
             }
@@ -262,14 +291,12 @@ namespace Ants {
 
 		
 		public static void Main (string[] args) {
-#if DEBUG
+/*#if DEBUG
             System.Diagnostics.Debugger.Launch();
             while (!System.Diagnostics.Debugger.IsAttached) { }
-#endif
+#endif*/
 
 			new Ants().PlayGame(new MyBot());
 		}
-
 	}
-	
 }
