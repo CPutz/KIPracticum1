@@ -183,7 +183,12 @@ namespace Ants {
         /// <returns>the position that the Ant <paramref name="ant"/> will be in the next turn.</returns>
         Location GetNextTurnLocation(Ant ant);
 
-        Location GetTileType(Location location);
+        /// <summary>
+        /// Gets the Tile Type of <paramref name="location"/>
+        /// </summary>
+        /// <param name="location">The location to be checked.</param>
+        /// <returns>The type of the tile on Location <paramref name="location"/></returns>
+        Tile GetTileType(Location location);
 
 		bool GetIsVisible(Location loc);
 	}

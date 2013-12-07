@@ -79,10 +79,7 @@ namespace Ants {
         public List<Location> Route { get; set; }
         public AntMode Mode { get; set; }
 
-
-        public Formation Formation { get; set; }
-
-
+        //secondary target and route
         public Location Target2 { get; set; }
         public List<Location> Route2 { get; set; }
 

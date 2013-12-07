@@ -393,6 +393,17 @@ namespace Ants {
 
             return null;
         }
+
+
+        /// <summary>
+        /// Gets the Tile Type of <paramref name="location"/>
+        /// </summary>
+        /// <param name="location">The location to be checked.</param>
+        /// <returns>The type of the tile on Location <paramref name="location"/></returns>
+        public Tile GetTileType(Location location) {
+            return map[location.Row, location.Col];
+        }
+
 		
 		public bool GetIsVisible(Location loc)
 		{

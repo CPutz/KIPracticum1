@@ -36,10 +36,6 @@ namespace Ants {
 
             if (source != null && destination != null) {
 
-                /*if (destination is Ant) {
-                    destination = gameState.GetNextTurnLocation((Ant)destination);
-                }*/
-
                 AStarOpenSet openSet = new AStarOpenSet(this.Width, this.Height);
                 AStarNode<Location>[,] closedSet = new AStarNode<Location>[this.Height, this.Width];
 

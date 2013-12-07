@@ -23,18 +23,14 @@ namespace Ants {
         private List<Location> defendPositions;
 
         //constants that influence AntMode probabilities
-        private const float K1 = 100;
-        private const float K2 = 100;
-        private const float K3 = 25;
-
-        private const int formationSize = 4;
+        private const float K1 = 150;
+        private const float K2 = 75;
+        private const float K3 = 10;
 
         private List<Location> targets;
         private List<Location> explorables;
 
         private List<Ant> defending;
-
-        public List<Formation> Formations { get; private set; }
 
         private Location target;
 
@@ -46,9 +42,6 @@ namespace Ants {
             this.targets = new List<Location>();
             this.explorables = new List<Location>();
             this.random = new Random();
-
-            this.Formations = new List<Formation>();
-            this.Formations.Add(new Formation());
 
             this.defending = new List<Ant>();
         }
@@ -165,7 +158,6 @@ namespace Ants {
             }
 
             this.UpdateDefendings(state);
-            this.UpdateFormations(state);
         }
 
 
@@ -186,98 +178,6 @@ namespace Ants {
         }
 
 
-        private void UpdateFormations(IGameState state) {
-
-            //remove ant from formation if it dies
-            foreach (Ant dead in state.MyDeads) {
-                if (dead.Formation != null) {
-                    dead.Formation.Remove(dead);
-                }
-            }
-
-            if (Formations.Count == 2 && Formations[0].Size == 4) {
-                int test = 2;
-            }
-
-            foreach (Formation formation in this.Formations) {
-
-                if (formation.Size == 4) {
-                    int test = 2;
-                }
-
-                if (formation.Size > 0 && (!formation.IsForming || (formation.Size >= formationSize && formation.InFormation(state)))) {
-                    formation.Target = target;
-                    formation.IsForming = false;
-                    formation.Leader.Route = null;
-
-                    if (target != null) {
-                        //Direction oldDirection = formation.Orientation;
-                        //formation.Orientation = new List<Direction>(state.GetDirections(formation.Leader, target))[0].GetPerpendicular();
-
-                        //if (oldDirection != formation.Orientation) {
-                        //    formation.IsForming = true;
-                        //}
-                    }
-                } else {
-                    if (target != null) {
-                        //formation.Orientation = new List<Direction>(state.GetDirections(formation.Target, target))[0].GetPerpendicular();
-                        //formation.Target = state.GetDestination(state.MyHills[0], new Location(0, 5));
-                        formation.Target = GetGatheringPoint(formation.Orientation, state);
-                        formation.Orientation = new List<Direction>(state.GetDirections(formation.Target, target))[0].GetPerpendicular();
-                    }
-                }
-
-                Ant leader = formation.Leader;
-                if (leader != null) {
-                    leader.Target = formation.Target;
-                }
-
-                Ant last = null;
-                foreach (Ant ant in formation) {
-                    if (!ant.Equals(leader)) {
-                        //if the formation is forming, the ant should go to its location in the formation
-                        if (formation.IsForming) {
-                            ant.Target = state.GetDestination(last.Target, formation.Orientation);
-                        } else {
-                            ant.Target = last;
-                        }
-                    }
-                    last = ant;
-                }
-            }
-        }
-
-
-        public Location GetGatheringPoint(Direction orientation, IGameState state) {
-
-            /*foreach (Direction direction in Enum.GetValues(typeof(Direction))) {
-                if (direction != Direction.None) {
-                    
-                }
-            }*/
-
-            List<Location> directions = new List<Location>(new Location[] { new Location(0, 5), new Location(0, -5), 
-                                                                           new Location(5, 0), new Location(-5, 0) });
-
-
-            foreach (Location direction in directions) {
-                Location location = state.GetDestination(state.MyHills[0], direction);
-                bool valid = true;
-
-                for (int i = 0; i < formationSize; ++i) {
-                    valid &= state.GetIsPassable(location);
-                    location = state.GetDestination(location, orientation);
-                }
-
-                if (valid) {
-                    return state.GetDestination(state.MyHills[0], direction);
-                }
-            }
-
-            return null;
-        }
-
-
         /// <summary>
         /// Sets the AntMode of <paramref name="ant"/>, according to the priorities of each task.
         /// </summary>
@@ -287,16 +187,6 @@ namespace Ants {
             if (num <= px) {
                 ant.Mode = AntMode.Explore;
             } else if (num <= px + py) {
-                //if the ant is in no formation, add it to a formation
-                if (ant.Formation == null) {
-                    Formation f = Formations[Formations.Count - 1];
-                    if (f.Size >= formationSize) {
-                        f = new Formation();
-                        Formations.Add(f);
-                    }
-                    f.Add(ant);
-                    ant.Formation = f;
-                }
                 ant.Mode = AntMode.Attack;
             } else {
                 if (defending.Count < defendPositions.Count) {
@@ -319,14 +209,11 @@ namespace Ants {
                     ant.Target = GetExplorable(ant, state);
                     break;
                 case AntMode.Attack:
-                    //if the ant doesn't belong to any formation, choose current target or random explore tile if no target exists
-                    /*if (ant.Formation == null) {
-                        if (target != null) {
-                            ant.Target = target;
-                        } else {
-                            ant.Target = GetExplorable(ant, state);
-                        }
-                    }*/
+                    if (target != null) {
+                        ant.Target = target;
+                    } else {
+                        ant.Target = GetExplorable(ant, state);
+                    }
                     break;
                 case AntMode.Defend:
                     //choose a defend position
@@ -358,6 +245,8 @@ namespace Ants {
                         return location;
                     }
                 }
+
+                return explorables[random.Next(explorables.Count)];
             }
             return location;
         }
