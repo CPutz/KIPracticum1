@@ -4,17 +4,17 @@ using System.Collections.Generic;
 namespace Ants {
 	public abstract class Bot {
 
-        private List<Reservation> reservations;
+        //private List<Reservation> reservations;
 
         public Bot() {
-            reservations = new List<Reservation>();
+            //reservations = new List<Reservation>();
         }
 
 		public abstract void DoTurn(IGameState state);
 
-        public void StartNewTurn() {
+        /*public void StartNewTurn() {
             reservations.Clear();
-        }
+        }*/
 
 		protected void IssueOrder(IGameState state, Ant ant, Direction direction) {
             if (direction != Direction.None) {
@@ -23,14 +23,14 @@ namespace Ants {
                     ant.WaitTime = 0;
                     state.MoveAnt(ant, direction);
                     System.Console.Out.WriteLine("o {0} {1} {2}", ant.Row, ant.Col, direction.ToChar());
-                } else {
+               /* } else {
                     reservations.Add(new Reservation(ant, direction));
-                    ant.WaitTime++;
+                    ant.WaitTime++;*/
                 }
             }
 		}
 
-        protected void IssueOrder(IGameState state, Reservation reservation) {
+        /*protected void IssueOrder(IGameState state, Reservation reservation) {
             //only walk if there's no other ant standing in that location
             if (reservation.Direction != Direction.None &&
                 state.GetIsUnoccupied(state.GetDestination(reservation.Ant, reservation.Direction))) {
@@ -44,10 +44,10 @@ namespace Ants {
             foreach (Reservation reservation in reservations) {
                 IssueOrder(state, reservation);
             }
-        }
+        }*/
 	}
 
-    public class Reservation {
+    /*public class Reservation {
         public Direction Direction { get; private set; }
         public Ant Ant { get; private set; }
 
@@ -55,5 +55,5 @@ namespace Ants {
             this.Ant = ant;
             this.Direction = direction;
         }
-    }
+    }*/
 }

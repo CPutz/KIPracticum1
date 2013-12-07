@@ -27,7 +27,7 @@ namespace Ants {
         private const float K2 = 100;
         private const float K3 = 25;
 
-        private const int formationSize = 6;
+        private const int formationSize = 4;
 
         private List<Location> targets;
         private List<Location> explorables;
@@ -172,11 +172,10 @@ namespace Ants {
         public void UpdateDefendings(IGameState state) {
 
             //remove dead ants from defendPositions
-            foreach (Location location in state.MyDeads) {
-                if (defendPositions.Contains(location)) {
-                    int index = defendPositions.IndexOf(location);
-                    if (index < defending.Count) {
-                        defending.RemoveAt(index);
+            foreach (Ant dead in state.MyDeads) {
+                foreach (Location location in defendPositions) {
+                    if (dead.Equals(location)) {
+                        defending.Remove(dead);
                     }
                 }
             }
@@ -196,6 +195,9 @@ namespace Ants {
                 }
             }
 
+            if (Formations.Count == 2 && Formations[0].InFormation(state)) {
+                int test = 2;
+            }
 
             foreach (Formation formation in this.Formations) {
 
@@ -203,16 +205,21 @@ namespace Ants {
                     formation.Target = target;
                     formation.IsForming = false;
                     formation.Leader.Route = null;
-                } else {
-                    /*if (Formations.Count == 1 || formation == Formations[1]) {
-                        formation.Target = new Location(106, 3);
-                        formation.Orientation = Direction.East;
-                    } else {
-                        formation.Target = new Location(106, 7);
-                    }*/
+
                     if (target != null) {
-                        formation.Target = state.GetDestination(state.MyHills[0], new Location(0, 6));
-                        formation.Orientation = new List<Direction>(state.GetDirections(formation.Target, target))[0];
+                        Direction oldDirection = formation.Orientation;
+                        formation.Orientation = new List<Direction>(state.GetDirections(formation.Leader, target))[0].GetPerpendicular();
+
+                        if (oldDirection != formation.Orientation) {
+                            formation.IsForming = true;
+                        }
+                    }
+                } else {
+                    if (target != null) {
+                        //formation.Orientation = new List<Direction>(state.GetDirections(formation.Target, target))[0].GetPerpendicular();
+                        //formation.Target = state.GetDestination(state.MyHills[0], new Location(0, 5));
+                        formation.Orientation = Direction.North;
+                        formation.Target = GetGatheringPoint(formation.Orientation, state);
                     }
                 }
 
@@ -234,6 +241,36 @@ namespace Ants {
                     last = ant;
                 }
             }
+        }
+
+
+        public Location GetGatheringPoint(Direction orientation, IGameState state) {
+
+            /*foreach (Direction direction in Enum.GetValues(typeof(Direction))) {
+                if (direction != Direction.None) {
+                    
+                }
+            }*/
+
+            List<Location> directions = new List<Location>(new Location[] { new Location(0, 5), new Location(0, -5), 
+                                                                           new Location(5, 0), new Location(-5, 0) });
+
+
+            foreach (Location direction in directions) {
+                Location location = state.GetDestination(state.MyHills[0], direction);
+                bool valid = true;
+
+                for (int i = 0; i < formationSize; ++i) {
+                    valid &= state.GetIsPassable(location);
+                    location = state.GetDestination(location, orientation);
+                }
+
+                if (valid) {
+                    return state.GetDestination(state.MyHills[0], direction);
+                }
+            }
+
+            return null;
         }
 
 

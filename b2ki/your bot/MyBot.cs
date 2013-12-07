@@ -17,7 +17,6 @@ namespace Ants {
 		public override void DoTurn (IGameState state) {
 
             this.decision.Update(state);
-            //onHill = new List<Ant>();
 
             Search search1 = new Search(state, state.GetDistance,
                 (Location location) => { return state.GetIsUnoccupied(location) && !state.GetIsAttackable(location); });
@@ -25,6 +24,7 @@ namespace Ants {
                 (Location location) => { return state.GetIsPassable(location) && !state.GetIsAttackable(location); });
             Search search3 = new Search(state, state.GetDistance, state.GetIsUnoccupied);
             Search search4 = new Search(state, state.GetDistance, state.GetIsPassable);
+
 
 
             foreach (Formation formation in decision.Formations) {
@@ -35,6 +35,10 @@ namespace Ants {
                     if (leader != null) {
                         if (leader.Route == null) {
                             leader.Route = search4.AStar(leader, leader.Target);
+                            if (DirectionFromPath(leader.Route, state) == formation.Orientation) {
+                                formation.Reverse();
+                            }
+                            leader.Route = search3.AStar(leader, leader.Target);
                         }
                         if (leader.Route != null) {
                             //then the leader can walk
@@ -51,37 +55,24 @@ namespace Ants {
                                         if (!ant.Equals(leader)) {
                                             Location nextTurnLocation = state.GetNextTurnLocation(last);
                                             Location location = state.GetDestination(nextTurnLocation, formation.Orientation);
-                                            List<Location> path = search3.AStar(ant, location, 2);
+                                            List<Location> path = search3.AStar(ant, location, 10);
                                             if (path == null) {
-                                                path = search4.AStar(ant, nextTurnLocation, 2);
+                                                path = search4.AStar(ant, nextTurnLocation, 10);
                                             }
                                             IssueOrder(state, ant, DirectionFromPath(path, state));
                                         }
                                         last = ant;
                                     }
-                                } else {
+                                } /*else {
                                     //if the formation is travalling in the same direction as it's orientation, switch leaders
                                     //because otherwise, the leader will always walk into the formation, forming problems
                                     if (formation.Orientation == direction) {
                                         formation.Reverse();
 
-                                        //change orientation because the formation is flipped
-                                        switch (formation.Orientation) {
-                                            case Direction.North:
-                                                formation.Orientation = Direction.South;
-                                                break;
-                                            case Direction.South:
-                                                formation.Orientation = Direction.North;
-                                                break;
-                                            case Direction.East:
-                                                formation.Orientation = Direction.West;
-                                                break;
-                                            case Direction.West:
-                                                formation.Orientation = Direction.East;
-                                                break;
-                                        }
+                                        //flip orientation because the formation is flipped
+                                        formation.Orientation = formation.Orientation.GetFlipped();
                                     }
-                                }
+                                }*/
                             } 
                         }
                     }
@@ -105,32 +96,9 @@ namespace Ants {
                     break;
             }
 
-            if (state.TimeRemaining >= 10) {
-                HandleReservations(state);
-            }
-
-            /*foreach (Ant ant in onHill) {
-                bool b = false;
-                foreach (AntHill hill in state.MyHills) {
-                    if (state.GetNextTurnLocation(ant).Equals(hill)) {
-                        b = true;
-                        break;
-                    }
-                }
-
-                //ant stands on a hill
-                if (b) {
-                    foreach (Direction direction in Enum.GetValues(typeof(Direction))) {
-                        if (direction != Direction.None) {
-                            Location location = state.GetDestination(ant, direction);
-                            if (state.GetIsUnoccupied(location)) {
-                                IssueOrder(state, ant, direction);
-                                break;
-                            }
-                        }
-                    }
-                }
-            }*/
+            //if (state.TimeRemaining >= 10) {
+                //HandleReservations(state);
+            //}
 		}
 
 
@@ -236,9 +204,9 @@ namespace Ants {
 
                     if (ant.Mode == AntMode.Attack) {
                         //calculate route using search1, if it fails, try search3
-                        ant.Route = search1.AStar(ant, ant.Target, distance * 2);
+                        ant.Route = search1.AStar(ant, ant.Target, distance * 5);
                         if (ant.Route == null) {
-                            ant.Route = search3.AStar(ant, ant.Target, distance * 2);
+                            ant.Route = search3.AStar(ant, ant.Target, distance * 5);
                         }
                     } else {
                         //calculate route using search1, if it fails, try search2
@@ -251,8 +219,10 @@ namespace Ants {
 
                 //if the route is valid, 
                 if (ant.Route != null && ant.Route.Count > 1) {
-                    IssueOrder(state, ant, DirectionFromPath(ant.Route, state));
-                    ant.Route.RemoveAt(0); //ghetto
+                    if (state.GetIsUnoccupied(ant.Route[1])) {
+                        IssueOrder(state, ant, DirectionFromPath(ant.Route, state));
+                        ant.Route.RemoveAt(0); //ghetto
+                    }
                 }
             }
         }

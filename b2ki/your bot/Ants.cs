@@ -43,7 +43,6 @@ namespace Ants {
 						state.StartNewTurn();
 						ParseUpdate(input);
                         state.UpdateTurn();
-                        bot.StartNewTurn();
                         bot.DoTurn(state);
                         FinishTurn();
 						input.Clear();
