@@ -27,19 +27,19 @@ namespace Ants {
         private const float K2 = 75;
         private const float K3 = 10;
 
-        private List<Location> targets;
+        private List<Location> attackTargets;
+        private Location attackTarget;
+
         private List<Location> explorables;
 
         private List<Ant> defending;
-
-        private Location target;
 
         private Random random;
 
         private float px, py, pz;
 
         public DecisionMaker() {
-            this.targets = new List<Location>();
+            this.attackTargets = new List<Location>();
             this.explorables = new List<Location>();
             this.random = new Random();
 
@@ -47,7 +47,7 @@ namespace Ants {
         }
 
         public void AddTarget(Location target) {
-            this.targets.Add(target);
+            this.attackTargets.Add(target);
         }
 
 
@@ -93,7 +93,7 @@ namespace Ants {
 
             //The importance of Attacking.
             //Depens on the amount of fog of war with respect to the map-size and the number of possible targets.
-            y = K2 * (1 - fogFraction) * targets.Count;
+            y = K2 * (1 - fogFraction) * attackTargets.Count;
 
             //The importance of Defending.
             //Depends on the size of the ant population and the number of ants that are defending with respect
@@ -118,8 +118,8 @@ namespace Ants {
 
             //check for new enemyhills, if one exists: add it to the targets list
             foreach (AntHill hill in state.EnemyHills) {
-                if (!targets.Contains(hill)) {
-                    targets.Add(hill);
+                if (!attackTargets.Contains(hill)) {
+                    attackTargets.Add(hill);
                 }
             }
 
@@ -137,24 +137,24 @@ namespace Ants {
             //check whether target is reached, if so: clear it
             List<Location> toRemove = new List<Location>();
             foreach (Ant ant in state.MyAnts) {
-                foreach (Location t in targets) {
+                foreach (Location t in attackTargets) {
                     if (ant.Equals(t)) {
-                        if (targets.Contains(t)) {
+                        if (attackTargets.Contains(t)) {
                             toRemove.Add(t);
                         }
-                        if (target.Equals(t)) {
-                            target = null;
+                        if (attackTarget.Equals(t)) {
+                            attackTarget = null;
                         }
                     }
                 }
             }
             foreach (Location loc in toRemove) {
-                targets.Remove(loc);
+                attackTargets.Remove(loc);
             }
 
             //choose new target if no current target exists
-            if (target == null && targets.Count != 0) {
-                target = targets[0];
+            if (attackTarget == null && attackTargets.Count != 0) {
+                attackTarget = attackTargets[0];
             }
 
             this.UpdateDefendings(state);
@@ -209,10 +209,13 @@ namespace Ants {
                     ant.Target = GetExplorable(ant, state);
                     break;
                 case AntMode.Attack:
-                    if (target != null) {
-                        ant.Target = target;
-                    } else {
+                    //if there is no current attackTarget or the ant waits for to long: just send it away.
+                    //we do this because if the ant is waiting for too long, we just want it to leave, and
+                    //not block other ants.
+                    if (ant.WaitTime > 2 || attackTarget == null) {
                         ant.Target = GetExplorable(ant, state);
+                    } else {
+                        ant.Target = attackTarget;
                     }
                     break;
                 case AntMode.Defend:
