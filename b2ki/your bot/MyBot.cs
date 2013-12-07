@@ -36,7 +36,11 @@ namespace Ants {
 
             foreach (Ant ant in state.MyAnts) {
 
-                if (ant.WaitTime > 10 && ant.Equals(state.MyHills[0])) {
+                if (state.MyHills.Count == 0) {
+                    int test = 2;
+                }
+
+                if (ant.Equals(state.MyHills[0]) && ant.WaitTime > 0) {
                     int test = 2;
                 }
 
@@ -93,7 +97,7 @@ namespace Ants {
                         } else {
                             //only get food if no other ant is blocking it
                             if (ant.Route2.Count > 1 && state.GetIsUnoccupied(ant.Route2[1])) {
-                                IssueOrder(state, ant, DirectionFromPath(ant.Route2, state));
+                                IssueOrder(state, ant, GetDirectionFromPath(ant.Route2, state));
                                 ant.Route2.RemoveAt(0);
                             } else {
                                 ant.Target2 = null;
@@ -155,7 +159,7 @@ namespace Ants {
                     //if we have a valid route, and there is no ant in the way, then issueorder.
                     if (ant.Route != null) {
                         if (ant.Route.Count > 1 && state.GetIsUnoccupied(ant.Route[1])) {
-                            IssueOrder(state, ant, DirectionFromPath(ant.Route, state));
+                            IssueOrder(state, ant, GetDirectionFromPath(ant.Route, state));
                             ant.Route.RemoveAt(0);
                         }
                     }
@@ -204,7 +208,7 @@ namespace Ants {
         }
 
 
-        private Direction DirectionFromPath(List<Location> path, IGameState state) {
+        private Direction GetDirectionFromPath(List<Location> path, IGameState state) {
             if (path == null || path.Count <= 1)
                 return Direction.None;
             else
@@ -213,10 +217,10 @@ namespace Ants {
 
 		
 		public static void Main (string[] args) {
-/*#if DEBUG
+#if DEBUG
             System.Diagnostics.Debugger.Launch();
             while (!System.Diagnostics.Debugger.IsAttached) { }
-#endif*/
+#endif
 
 			new Ants().PlayGame(new MyBot());
 		}

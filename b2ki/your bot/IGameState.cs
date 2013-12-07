@@ -60,7 +60,7 @@ namespace Ants {
         int Turn { get; }
 
 		/// <summary>
-		/// Gets a list of your currently visible hills.
+		/// Gets a list of your currently visible friendly hills.
 		/// </summary>
 		List<AntHill> MyHills { get; }
 

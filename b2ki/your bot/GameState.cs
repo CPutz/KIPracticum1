@@ -170,7 +170,7 @@ namespace Ants {
                                     Location loc = GetDestination(newLocation, new Location(r, c));
 
                                     if (GetIsPassable(loc)) {
-                                        //add visible locations to visibilitymap
+                                        //add visible locations to enemyattack map
                                         EnemyAttackMap[loc.Row, loc.Col] = true;
                                     }
                                 }
@@ -230,6 +230,7 @@ namespace Ants {
 				EnemyHills.Add (hill);
 		}
 
+        //tells the gamestate that an ant will be moved next turn
         public void MoveAnt(Ant ant, Direction direction) {
             Location newLoc = this.GetDestination(ant, direction);
             myAntsTemp[newLoc.Row, newLoc.Col] = ant;
