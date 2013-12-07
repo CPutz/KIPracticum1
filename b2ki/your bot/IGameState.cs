@@ -183,6 +183,8 @@ namespace Ants {
         /// <returns>the position that the Ant <paramref name="ant"/> will be in the next turn.</returns>
         Location GetNextTurnLocation(Ant ant);
 
+        Location GetTileType(Location location);
+
 		bool GetIsVisible(Location loc);
 	}
 }

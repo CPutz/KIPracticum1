@@ -169,7 +169,7 @@ namespace Ants {
         }
 
 
-        public void UpdateDefendings(IGameState state) {
+        private void UpdateDefendings(IGameState state) {
 
             //remove dead ants from defendPositions
             foreach (Ant dead in state.MyDeads) {
@@ -186,7 +186,7 @@ namespace Ants {
         }
 
 
-        public void UpdateFormations(IGameState state) {
+        private void UpdateFormations(IGameState state) {
 
             //remove ant from formation if it dies
             foreach (Ant dead in state.MyDeads) {
@@ -195,11 +195,15 @@ namespace Ants {
                 }
             }
 
-            if (Formations.Count == 2 && Formations[0].InFormation(state)) {
+            if (Formations.Count == 2 && Formations[0].Size == 4) {
                 int test = 2;
             }
 
             foreach (Formation formation in this.Formations) {
+
+                if (formation.Size == 4) {
+                    int test = 2;
+                }
 
                 if (formation.Size > 0 && (!formation.IsForming || (formation.Size >= formationSize && formation.InFormation(state)))) {
                     formation.Target = target;
@@ -207,19 +211,19 @@ namespace Ants {
                     formation.Leader.Route = null;
 
                     if (target != null) {
-                        Direction oldDirection = formation.Orientation;
-                        formation.Orientation = new List<Direction>(state.GetDirections(formation.Leader, target))[0].GetPerpendicular();
+                        //Direction oldDirection = formation.Orientation;
+                        //formation.Orientation = new List<Direction>(state.GetDirections(formation.Leader, target))[0].GetPerpendicular();
 
-                        if (oldDirection != formation.Orientation) {
-                            formation.IsForming = true;
-                        }
+                        //if (oldDirection != formation.Orientation) {
+                        //    formation.IsForming = true;
+                        //}
                     }
                 } else {
                     if (target != null) {
                         //formation.Orientation = new List<Direction>(state.GetDirections(formation.Target, target))[0].GetPerpendicular();
                         //formation.Target = state.GetDestination(state.MyHills[0], new Location(0, 5));
-                        formation.Orientation = Direction.North;
                         formation.Target = GetGatheringPoint(formation.Orientation, state);
+                        formation.Orientation = new List<Direction>(state.GetDirections(formation.Target, target))[0].GetPerpendicular();
                     }
                 }
 

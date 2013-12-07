@@ -32,6 +32,7 @@ namespace Ants {
                 if (!formation.IsForming) {
                     Ant leader = formation.Leader;
 
+
                     if (leader != null) {
                         if (leader.Route == null) {
                             leader.Route = search4.AStar(leader, leader.Target);
@@ -52,14 +53,16 @@ namespace Ants {
 
                                     Ant last = null;
                                     foreach (Ant ant in formation) {
-                                        if (!ant.Equals(leader)) {
+                                        if (last != null && !ant.Equals(leader)) {
                                             Location nextTurnLocation = state.GetNextTurnLocation(last);
                                             Location location = state.GetDestination(nextTurnLocation, formation.Orientation);
-                                            List<Location> path = search3.AStar(ant, location, 10);
+                                            List<Location> path = search3.AStar(ant, location, 5);
                                             if (path == null) {
-                                                path = search4.AStar(ant, nextTurnLocation, 10);
+                                                path = search4.AStar(ant, nextTurnLocation, 5);
                                             }
-                                            IssueOrder(state, ant, DirectionFromPath(path, state));
+                                            if (path != null && path.Count > 1 && state.GetIsUnoccupied(path[1])) {
+                                                IssueOrder(state, ant, DirectionFromPath(path, state));
+                                            }
                                         }
                                         last = ant;
                                     }
@@ -179,7 +182,7 @@ namespace Ants {
 
             if (ant.Target2 == null) {
 
-                if (ant.Equals(ant.Target)) {
+                if (ant.Equals(ant.Target) || state. ant.Target2) {
                     ant.Target = null;
                     ant.Route = null;
                 }
