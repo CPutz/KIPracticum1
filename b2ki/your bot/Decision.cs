@@ -27,6 +27,8 @@ namespace Ants {
         private const float K2 = 75;
         private const float K3 = 10;
 
+        private const int exploreDistance = 30;
+
         private List<Location> attackTargets;
         private Location attackTarget;
 
@@ -57,7 +59,7 @@ namespace Ants {
         public void Update(IGameState state) {
 
             //initialize defend positions the first time
-            //(you do it here, because if we did it in a init method, then the MyHills List would be empty,
+            //(we do it here, because if we did it in a init method, then the MyHills List would be empty,
             //because your hills get added in the first turn)
             if (defendPositions == null) {
                 defendPositions = new List<Location>();
@@ -73,6 +75,18 @@ namespace Ants {
             }
 
 
+            this.UpdateProbabilities(state);
+            this.UpdateExplorables(state);
+            this.UpdateAttackTargets(state);
+            this.UpdateDefendings(state);
+        }
+
+
+        /// <summary>
+        /// Update the probabilities px, py and pz, that describe the priorities of respectivly exploring, attacking and defending.
+        /// </summary>
+        /// <param name="state">The gamestate.</param>
+        private void UpdateProbabilities(IGameState state) {
             //determine the amount of fog of war
             int fog = 0;
             for (int row = 0; row < state.Height; ++row) {
@@ -83,27 +97,23 @@ namespace Ants {
                 }
             }
 
-            float fogFraction = (float)fog / (state.Width * state.Height);
 
+            //the fraction of the map that is fog
+            float f = (float)fog / (state.Width * state.Height);
             float x, y, z;
 
             //The importance of Exploring.
             //Depends on the amount of fog of war with respect to the map-size.
-            x = K1 * fogFraction;
+            x = K1 * f;
 
             //The importance of Attacking.
             //Depens on the amount of fog of war with respect to the map-size and the number of possible targets.
-            y = K2 * (1 - fogFraction) * attackTargets.Count;
+            y = K2 * (1 - f) * attackTargets.Count;
 
             //The importance of Defending.
             //Depends on the size of the ant population and the number of ants that are defending with respect
             //to the maximal number of ants that can defend.
             z = K3 * (int)(state.MyAnts.Count / 10) * (1 - (float)defending.Count / defendPositions.Count);
-
-
-            //x = 0;
-            //y = 1;
-            //z = 0;
 
 
             //calculate probibilities of choosing a certain AntMode
@@ -112,10 +122,21 @@ namespace Ants {
                 this.px = x / sum;
                 this.py = y / sum;
                 this.pz = z / sum;
+            } else {
+                //if all priorities are 0 (very little change to happen, because then there ís no fog,
+                //then just create more attacking ants (because exploring isn't needed)
+                x = 0;
+                y = 1;
+                z = 0;
             }
+        }
 
 
-
+        /// <summary>
+        /// Adds and removes attackTargets, and chooses a current attackTarget if needed.
+        /// </summary>
+        /// <param name="state">The gamestate.</param>
+        private void UpdateAttackTargets(IGameState state) {
             //check for new enemyhills, if one exists: add it to the targets list
             foreach (AntHill hill in state.EnemyHills) {
                 if (!attackTargets.Contains(hill)) {
@@ -123,18 +144,7 @@ namespace Ants {
                 }
             }
 
-            //clear and recalculate the explorable tiles
-            explorables.Clear();
-            for (int row = 0; row < state.Height; ++row) {
-                for (int col = 0; col < state.Width; ++col) {
-                    Location location = new Location(row, col);
-                    if (state.GetIsUnoccupied(location) && !state.VisibilityMap[row, col] && !state.GetIsAttackable(location)) {
-                        explorables.Add(location);
-                    }
-                }
-            }
-
-            //check whether target is reached, if so: clear it
+            //check whether target is reached, if so: remove it
             List<Location> toRemove = new List<Location>();
             foreach (Ant ant in state.MyAnts) {
                 foreach (Location t in attackTargets) {
@@ -156,11 +166,13 @@ namespace Ants {
             if (attackTarget == null && attackTargets.Count != 0) {
                 attackTarget = attackTargets[0];
             }
-
-            this.UpdateDefendings(state);
         }
 
 
+        /// <summary>
+        /// Updates what ants are defending where
+        /// </summary>
+        /// <param name="state">The gamestate.</param>
         private void UpdateDefendings(IGameState state) {
 
             //remove dead ants from defendPositions
@@ -174,6 +186,25 @@ namespace Ants {
             
             for (int i = 0; i < defending.Count; ++i) {
                 defending[i].Target = defendPositions[i];
+            }
+        }
+
+
+        /// <summary>
+        /// Calculates all explorables.
+        /// </summary>
+        /// <param name="state">The gamestate.</param>
+        private void UpdateExplorables(IGameState state) {
+            //clear and recalculate the explorable tiles
+            explorables.Clear();
+            for (int row = 0; row < state.Height; ++row) {
+                for (int col = 0; col < state.Width; ++col) {
+                    Location location = new Location(row, col);
+                    //an explorable location is unoccupied, not vissible, and not attackable in one turn.
+                    if (state.GetIsUnoccupied(location) && !state.VisibilityMap[row, col] && !state.GetIsAttackable(location)) {
+                        explorables.Add(location);
+                    }
+                }
             }
         }
 
@@ -234,21 +265,25 @@ namespace Ants {
 
 
         /// <summary>
-        /// Gets a explorable location.
+        /// Gets a explorable location, preferably within exploreDistance.
         /// </summary>
+        /// <param name="ant">The ant to search an explorable for.</param>
+        /// <param name="state">The gamestate.</param>
         /// <returns>A location that is not visible, passible, and cannot be attacked in one turn if
         /// there exists one, <c>null</c> otherwist.</returns>
         public Location GetExplorable(Ant ant, IGameState state) {
             Location location = null;
 
             if (explorables.Count > 0) {
+                //try 5 times to find an explorable location within distance exploreDistance
                 for (int i = 0; i < 5; ++i) {
                     location = explorables[random.Next(explorables.Count)];
-                    if (state.GetDistance(location, ant) <= 30) {
+                    if (state.GetDistance(location, ant) <= exploreDistance) {
                         return location;
                     }
                 }
 
+                //if no explorable location is found within distance exploreDistance, return a random explorable
                 return explorables[random.Next(explorables.Count)];
             }
             return location;

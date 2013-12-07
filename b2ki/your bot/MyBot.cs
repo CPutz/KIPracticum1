@@ -152,9 +152,9 @@ namespace Ants {
                         }
                     }
 
-                    //if the route is valid, 
-                    if (ant.Route != null && ant.Route.Count > 1) {
-                        if (state.GetIsUnoccupied(ant.Route[1])) {
+                    //if we have a valid route, and there is no ant in the way, then issueorder.
+                    if (ant.Route != null) {
+                        if (ant.Route.Count > 1 && state.GetIsUnoccupied(ant.Route[1])) {
                             IssueOrder(state, ant, DirectionFromPath(ant.Route, state));
                             ant.Route.RemoveAt(0);
                         }
