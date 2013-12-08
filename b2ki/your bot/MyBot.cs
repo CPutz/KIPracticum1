@@ -36,14 +36,6 @@ namespace Ants {
 
             foreach (Ant ant in state.MyAnts) {
 
-                if (state.MyHills.Count == 0) {
-                    int test = 2;
-                }
-
-                if (ant.Equals(state.MyHills[0]) && ant.WaitTime > 0) {
-                    int test = 2;
-                }
-
                 ant.WaitTime++;
 
                 if (ant.Mode == AntMode.None) {
