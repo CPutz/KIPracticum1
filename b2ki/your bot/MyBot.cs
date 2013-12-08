@@ -28,13 +28,26 @@ namespace Ants {
                 (Location location) => { return state.GetIsPassable(location) && !state.GetIsAttackable(location); });
 
             //search for a path that takes in account where other friendly ants are, but does not look at enemy ants.
-            Search search3 = new Search(state, state.GetDistance, state.GetIsUnoccupied);
+            //Search search3 = new Search(state, state.GetDistance, state.GetIsUnoccupied);
             
             
-            //Search search4 = new Search(state, state.GetDistance, state.GetIsPassable);
+            Search search4 = new Search(state, state.GetDistance, state.GetIsPassable);
 
 
             foreach (Ant ant in state.MyAnts) {
+
+                if (ant.Mode == AntMode.Defend && ant.WaitTime > 5) {
+                    foreach (AntHill hill in state.MyHills) {
+                        if (ant.Equals(hill)) {
+                            decision.ReportInvalidDefendPosition(ant.Target);
+                            
+                            //reset ant
+                            ant.Target = null;
+                            ant.Route = null;
+                            ant.Mode = AntMode.None;
+                        }
+                    }
+                }
 
                 ant.WaitTime++;
 
@@ -91,6 +104,9 @@ namespace Ants {
                             if (ant.Route2.Count > 1 && state.GetIsUnoccupied(ant.Route2[1])) {
                                 IssueOrder(state, ant, GetDirectionFromPath(ant.Route2, state));
                                 ant.Route2.RemoveAt(0);
+
+                                //original route has become invalid
+                                ant.Route = null;
                             } else {
                                 ant.Target2 = null;
                                 ant.Route2 = null;
@@ -135,15 +151,15 @@ namespace Ants {
 
                         if (ant.Mode == AntMode.Attack) {
                             //calculate route using search1, if it fails, try search3
-                            ant.Route = search1.AStar(ant, ant.Target, distance);
+                            ant.Route = search1.AStar(ant, ant.Target, distance * 3);
                             if (ant.Route == null) {
-                                ant.Route = search3.AStar(ant, ant.Target, distance);
+                                ant.Route = search4.AStar(ant, ant.Target, distance * 3);
                             }
                         } else {
                             //calculate route using search1, if it fails, try search2
-                            ant.Route = search1.AStar(ant, ant.Target, distance * 2);
+                            ant.Route = search1.AStar(ant, ant.Target, distance * 3);
                             if (ant.Route == null) {
-                                ant.Route = search2.AStar(ant, ant.Target, distance * 2);
+                                ant.Route = search2.AStar(ant, ant.Target, distance * 3);
                             }
                         }
                     }
@@ -209,10 +225,10 @@ namespace Ants {
 
 		
 		public static void Main (string[] args) {
-/*#if DEBUG
+#if DEBUG
             System.Diagnostics.Debugger.Launch();
             while (!System.Diagnostics.Debugger.IsAttached) { }
-#endif*/
+#endif
 
 			new Ants().PlayGame(new MyBot());
 		}
