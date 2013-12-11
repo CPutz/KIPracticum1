@@ -33,6 +33,7 @@ namespace Ants {
 
             foreach (Ant ant in state.MyAnts) {
 
+                //check whether a defend ant is blocking hill because it cannot go to its defend position.
                 if (ant.Mode == AntMode.Defend && ant.WaitTime > 5) {
                     foreach (AntHill hill in state.MyHills) {
                         if (ant.Equals(hill)) {
