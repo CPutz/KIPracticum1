@@ -28,21 +28,10 @@ namespace Ants {
                 (Location location) => { return state.GetIsPassable(location) && !state.GetIsAttackable(location); });
 
             //search for a path that takes in account where other friendly ants are, but does not look at enemy ants.
-            Search search3 = new Search(state, state.GetDistance, state.GetIsUnoccupied);
+            Search search3 = new Search(state, state.GetDistance, state.GetIsPassable);
             
-            
-            //Search search4 = new Search(state, state.GetDistance, state.GetIsPassable);
-
 
             foreach (Ant ant in state.MyAnts) {
-
-                if (state.MyHills.Count == 0) {
-                    int test = 2;
-                }
-
-                if (ant.Equals(state.MyHills[0]) && ant.WaitTime > 0) {
-                    int test = 2;
-                }
 
                 ant.WaitTime++;
 
@@ -51,61 +40,39 @@ namespace Ants {
                 }
 
 
-                //defending ants should never get food or hills.
-                if (ant.Mode != AntMode.Defend) {
-                    
-                    //if no secondairy target
-                    if (ant.Target2 == null) {
-                      
-                        //search for a hill to attack
-                        ant.Target2 = GetTargetFromMap(ant, state.EnemyHills, state.ViewRadius2, state.ViewRadius, state);
-                        if (ant.Target2 == null) {
-                            //if there's no hill to attack in radius, search for food
+                //updates the secondary target of the ant, so gets hill or food target when needed
+                decision.UpdateTarget2(ant, state);
 
-                            //ants in attack mode should not get food that's very far away
-                            int foodRadius = (ant.Mode == AntMode.Attack) ? 2 : state.ViewRadius;
-                            int foodRadius2 = (ant.Mode == AntMode.Attack) ? 4 : state.ViewRadius2;
 
-                            ant.Target2 = GetTargetFromMap(ant, state.FoodTiles, foodRadius2, foodRadius, state);
+                if (ant.Target2 != null) {
+
+                    if (ant.Route2 == null) {
+                        //only get food if youre not gonna die for it, and if no other ant is in the way (use search1).
+                        //and there exists a path to the food/hill which distance is less than 1.5 times 
+                        //the distance between the ant and the food/hill.
+                        ant.Route2 = search1.AStar(ant, ant.Target2, (int)(state.GetDistance(ant, ant.Target2) * 1.5));
+
+                        //remove the last node if its food because we don't need to stand on it to get it.
+                        if (ant.Route2 != null && state.FoodTiles.Contains(ant.Target2)) {
+                            ant.Route2.RemoveAt(ant.Route2.Count - 1);
                         }
                     }
 
-                    if (ant.Target2 != null) {
-
-                        //check whether the food/hill tile still exists, if not: drop the target
-                        Tile targetType = state.GetTileType(ant.Target2);
-                        if (targetType != Tile.Food && targetType != Tile.Hill) {
+                    //if the route2 is null after recalculation, drop the target
+                    if (ant.Route2 == null) {
+                        ant.Target2 = null;
+                    } else {
+                        //only get food if no other ant is blocking it
+                        if (ant.Route2.Count > 1 && state.GetIsUnoccupied(ant.Route2[1])) {
+                            IssueOrder(state, ant, GetDirectionFromPath(ant.Route2, state));
+                            ant.Route2.RemoveAt(0);
+                        } else {
                             ant.Target2 = null;
                             ant.Route2 = null;
                         }
-
-                        if (ant.Route2 == null) {
-                            //only get food if youre not gonna die for it, and if no other ant is in the way (use search1).
-                            //and there exists a path to the food/hill which distance is less than 1.5 times 
-                            //the distance between the ant and the food/hill.
-                            ant.Route2 = search1.AStar(ant, ant.Target2, (int)(state.GetDistance(ant, ant.Target2) * 1.5));
-
-                            //remove the last node if its food because we don't need to stand on it to get it.
-                            if (ant.Route2 != null && state.FoodTiles.Contains(ant.Target2)) {
-                                ant.Route2.RemoveAt(ant.Route2.Count - 1);
-                            }
-                        }
-
-                        //if the route2 is null after recalculation, drop the target
-                        if (ant.Route2 == null) {
-                            ant.Target2 = null;
-                        } else {
-                            //only get food if no other ant is blocking it
-                            if (ant.Route2.Count > 1 && state.GetIsUnoccupied(ant.Route2[1])) {
-                                IssueOrder(state, ant, GetDirectionFromPath(ant.Route2, state));
-                                ant.Route2.RemoveAt(0);
-                            } else {
-                                ant.Target2 = null;
-                                ant.Route2 = null;
-                            }
-                        }
                     }
                 }
+                
 
 
                 //if there exists no secundairy target, then get the primary target.
@@ -137,15 +104,15 @@ namespace Ants {
                     //if an ant has no route or the current route is not passable (crosses water), recalculate it.
                     //we have to check whether a route is passible, because at the beginning of the match, we don't 
                     //know the map looks like. we could plan a route that later turns out to cross water.
-                    if (ant.Route == null || ant.Route.Count > 1 && !state.GetIsPassable(ant.Route[1])) {
+                    if (ant.Target != null && (ant.Route == null || ant.Route.Count > 1 && !state.GetIsPassable(ant.Route[1]))) {
 
                         int distance = state.GetDistance(ant, ant.Target);
 
                         if (ant.Mode == AntMode.Attack) {
                             //calculate route using search1, if it fails, try search3
-                            ant.Route = search1.AStar(ant, ant.Target, distance);
+                            ant.Route = search1.AStar(ant, ant.Target, distance * 2);
                             if (ant.Route == null) {
-                                ant.Route = search3.AStar(ant, ant.Target, distance);
+                                ant.Route = search3.AStar(ant, ant.Target, distance * 2);
                             }
                         } else {
                             //calculate route using search1, if it fails, try search2
@@ -165,48 +132,10 @@ namespace Ants {
                     }
                 }
 
-                if (state.TimeRemaining < 10) 
+                if (state.TimeRemaining < 20) 
                     break;
             }
 		}
-
-
-        /// <summary>
-        /// Gets the closest target from the <paramref name="map"/> within a certain <paramref name="radius"/>
-        /// </summary>
-        /// <typeparam name="T">Used to make the function work for foodmaps, and hillmaps.</Location></typeparam>
-        /// <param name="ant">The ant that looks for a target.</param>
-        /// <param name="map">The map containing all possible targets.</param>
-        /// <param name="radius">The search radius as int.</param>
-        /// <param name="radius2">The sqaure of <paramref name="radius"/>. We need <paramref name="radius"/> and <paramref name="radius2"/>,
-        /// because <paramref name="radius"/> is saved as int, so we can't just pass <paramref name="radius"/>, and we don't want
-        /// to calculate the sqaure root of <paramref name="radius2"/> every time this method is called because it is an 
-        /// expensive operation.</param>
-        /// <param name="state">The gamestate.</param>
-        /// <returns>The closest target for <paramref name="ant"/> if it exists, <c>null</c> otherwise.</returns>
-        private Location GetTargetFromMap<T>(Ant ant, Map<T> map, int radius2, int radius, IGameState state) where T : Location {
-            int distance = int.MaxValue;
-            Location location = null;
-
-            for (int r = -1 * radius; r <= radius; ++r) {
-                for (int c = -1 * radius; c <= radius; ++c) {
-                    int square = r * r + c * c;
-                    if (square <= radius2) {
-                        Location loc = state.GetDestination(ant, new Location(r, c));
-
-                        if (map.Contains(loc)) {
-                            int tempDistance = state.GetDistance(ant, loc);
-                            if (tempDistance < distance) {
-                                location = loc;
-                            }
-                        }
-                    }
-                }
-            }
-
-            return location;
-        }
-
 
         private Direction GetDirectionFromPath(List<Location> path, IGameState state) {
             if (path == null || path.Count <= 1)
@@ -217,10 +146,10 @@ namespace Ants {
 
 		
 		public static void Main (string[] args) {
-#if DEBUG
+/*#if DEBUG
             System.Diagnostics.Debugger.Launch();
             while (!System.Diagnostics.Debugger.IsAttached) { }
-#endif
+#endif*/
 
 			new Ants().PlayGame(new MyBot());
 		}

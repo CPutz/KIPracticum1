@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace Ants {
     public enum AntMode { None, Explore, Attack, Defend };
@@ -152,7 +150,7 @@ namespace Ants {
                         if (attackTargets.Contains(t)) {
                             toRemove.Add(t);
                         }
-                        if (attackTarget.Equals(t)) {
+                        if (attackTarget != null && attackTarget.Equals(t)) {
                             attackTarget = null;
                         }
                     }
@@ -160,6 +158,12 @@ namespace Ants {
             }
             foreach (Location loc in toRemove) {
                 attackTargets.Remove(loc);
+
+                foreach (Ant ant in state.MyAnts) {
+                    if (loc.Equals(ant.Target)) {
+                        ant.Target = null;
+                    }
+                }
             }
 
             //choose new target if no current target exists
@@ -243,7 +247,7 @@ namespace Ants {
                     //if there is no current attackTarget or the ant waits for to long: just send it away.
                     //we do this because if the ant is waiting for too long, we just want it to leave, and
                     //not block other ants.
-                    if (ant.WaitTime > 2 || attackTarget == null) {
+                    if (attackTarget == null || ant.WaitTime > 2) {
                         ant.Target = GetExplorable(ant, state);
                     } else {
                         ant.Target = attackTarget;
@@ -276,7 +280,7 @@ namespace Ants {
 
             if (explorables.Count > 0) {
                 //try 5 times to find an explorable location within distance exploreDistance
-                for (int i = 0; i < 5; ++i) {
+                for (int i = 0; i < 10; ++i) {
                     location = explorables[random.Next(explorables.Count)];
                     if (state.GetDistance(location, ant) <= exploreDistance) {
                         return location;
@@ -286,6 +290,77 @@ namespace Ants {
                 //if no explorable location is found within distance exploreDistance, return a random explorable
                 return explorables[random.Next(explorables.Count)];
             }
+            return location;
+        }
+
+
+        /// <summary>
+        /// Updates the secondary target property of the ant.
+        /// </summary>
+        /// <param name="ant">The ant to be updated.</param>
+        /// <param name="state">The gamestate.</param>
+        public void UpdateTarget2(Ant ant, IGameState state) {
+            
+            //defending ants should never get food or hills.
+            if (ant.Mode != AntMode.Defend) {
+                //if no secondairy target
+                if (ant.Target2 == null) {
+
+                    //search for a hill to attack
+                    ant.Target2 = GetTargetFromMap(ant, state.EnemyHills, state.ViewRadius2, state.ViewRadius, state);
+                    if (ant.Target2 == null) {
+                        //if there's no hill to attack in radius, search for food
+
+                        //ants in attack mode should not get food that's very far away
+                        int foodRadius = (ant.Mode == AntMode.Attack) ? 2 : state.ViewRadius;
+                        int foodRadius2 = (ant.Mode == AntMode.Attack) ? 4 : state.ViewRadius2;
+
+                        ant.Target2 = GetTargetFromMap(ant, state.FoodTiles, foodRadius2, foodRadius, state);
+                    }
+                } else {
+                    //check whether the food/hill tile still exists, if not: drop the target
+                    Tile targetType = state.GetTileType(ant.Target2);
+                    if (targetType != Tile.Food && targetType != Tile.Hill) {
+                        ant.Target2 = null;
+                    }
+                }
+            }
+        }
+
+
+        /// <summary>
+        /// Gets the closest target from the <paramref name="map"/> within a certain <paramref name="radius"/>
+        /// </summary>
+        /// <typeparam name="T">Used to make the function work for foodmaps, and hillmaps.</Location></typeparam>
+        /// <param name="ant">The ant that looks for a target.</param>
+        /// <param name="map">The map containing all possible targets.</param>
+        /// <param name="radius">The search radius as int.</param>
+        /// <param name="radius2">The sqaure of <paramref name="radius"/>. We need <paramref name="radius"/> and <paramref name="radius2"/>,
+        /// because <paramref name="radius"/> is saved as int, so we can't just pass <paramref name="radius"/>, and we don't want
+        /// to calculate the sqaure root of <paramref name="radius2"/> every time this method is called because it is an 
+        /// expensive operation.</param>
+        /// <param name="state">The gamestate.</param>
+        /// <returns>The closest target for <paramref name="ant"/> if it exists, <c>null</c> otherwise.</returns>
+        private Location GetTargetFromMap<T>(Ant ant, Map<T> map, int radius2, int radius, IGameState state) where T : Location {
+            int distance = int.MaxValue;
+            Location location = null;
+
+            for (int r = -1 * radius; r <= radius; ++r) {
+                for (int c = -1 * radius; c <= radius; ++c) {
+                    int square = r * r + c * c;
+                    if (square <= radius2) {
+                        Location loc = state.GetDestination(ant, new Location(r, c));
+
+                        if (map.Contains(loc)) {
+                            int tempDistance = state.GetDistance(ant, loc);
+                            if (tempDistance < distance) {
+                                location = loc;
+                            }
+                        }
+                    }
+                }
+            }
+
             return location;
         }
     }

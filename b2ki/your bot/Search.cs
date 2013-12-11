@@ -67,7 +67,7 @@ namespace Ants {
 
                             //If neighbour in closedSet and F is worse than neighbour.F, or neighbour is not a passable block, then go to next neighbour.
                             if ((closedSet[neighbour.Row, neighbour.Col] != null && F >= closedSet[neighbour.Row, neighbour.Col].F) ||
-                                !isPassible(neighbour) || G > maxDistance)
+                                !isPassible(neighbour) || F > maxDistance)
                                 continue;
 
                             bool notInOpen = !openSet.Contains(neighbour);

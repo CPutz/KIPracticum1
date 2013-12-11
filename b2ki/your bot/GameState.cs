@@ -35,7 +35,7 @@ namespace Ants {
 		public Map<Location> FoodTiles { get; private set; }
 
         //keeps track of where all ants will be positioned in the next turn.
-        private Ant[,] myAntsTemp;
+        private Ant[,] MyAntsNextTurn;
         private int antNumber;
 
         public bool[,] VisibilityMap { get; private set; }
@@ -76,7 +76,7 @@ namespace Ants {
             EnemyDeads = new List<Location>();
 			FoodTiles = new Map<Location>(Width, Height);
 
-            myAntsTemp = new Ant[Height, Width];
+            MyAntsNextTurn = new Ant[Height, Width];
             antNumber = 0;
 
             map = new Tile[Height, Width];
@@ -123,17 +123,17 @@ namespace Ants {
 
         //this method should every turn be called after all ants have been added to MyAnts
         public void UpdateTurn() {
-            myAntsTemp = new Ant[Height, Width];
-            //fill myAntsTemp data
-            foreach (Ant ant in MyAnts) myAntsTemp[ant.Row, ant.Col] = ant;
+            MyAntsNextTurn = new Ant[Height, Width];
+            //fill MyAntsNextTurn data
+            foreach (Ant ant in MyAnts) MyAntsNextTurn[ant.Row, ant.Col] = ant;
         }
 
 		public void AddAnt (int row, int col, int team) {
 			map[row, col] = Tile.Ant;
             Ant ant;
             if (team == 0) {
-                if (myAntsTemp[row, col] != null) {
-                    ant = myAntsTemp[row, col];
+                if (MyAntsNextTurn[row, col] != null) {
+                    ant = MyAntsNextTurn[row, col];
                     ant.SetLocation(row, col);
                 } else {
                     ant = new Ant(row, col, team, antNumber);
@@ -208,7 +208,7 @@ namespace Ants {
 			
 			// but always add to the dead list
             if (team == 0) {
-                Ant dead = myAntsTemp[row, col];
+                Ant dead = MyAntsNextTurn[row, col];
                 if (dead != null) {
                     MyDeads.Add(dead);
                 }
@@ -233,8 +233,8 @@ namespace Ants {
         //tells the gamestate that an ant will be moved next turn
         public void MoveAnt(Ant ant, Direction direction) {
             Location newLoc = this.GetDestination(ant, direction);
-            myAntsTemp[newLoc.Row, newLoc.Col] = ant;
-            myAntsTemp[ant.Row, ant.Col] = null;
+            MyAntsNextTurn[newLoc.Row, newLoc.Col] = ant;
+            MyAntsNextTurn[ant.Row, ant.Col] = null;
         }
 
 		#endregion
@@ -260,7 +260,7 @@ namespace Ants {
                 b |= hill.Equals(location);
             }
 
-			return !b && GetIsPassable(location) && myAntsTemp[location.Row, location.Col] == null;
+			return !b && GetIsPassable(location) && MyAntsNextTurn[location.Row, location.Col] == null;
 		}
 
         /// <summary>
@@ -387,7 +387,7 @@ namespace Ants {
         public Location GetNextTurnLocation(Ant ant) {
             foreach (Direction direction in Enum.GetValues(typeof(Direction))) {
                 Location loc = GetDestination(ant, direction);
-                if (this.myAntsTemp[loc.Row, loc.Col] != null && ant.Id == this.myAntsTemp[loc.Row, loc.Col].Id) {
+                if (this.MyAntsNextTurn[loc.Row, loc.Col] != null && ant.Id == this.MyAntsNextTurn[loc.Row, loc.Col].Id) {
                     return loc;
                 }
             }
