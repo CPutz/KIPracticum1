@@ -33,6 +33,19 @@ namespace Ants {
 
             foreach (Ant ant in state.MyAnts) {
 
+                if (ant.Mode == AntMode.Defend && ant.WaitTime > 5) {
+                    foreach (AntHill hill in state.MyHills) {
+                        if (ant.Equals(hill)) {
+                            decision.ReportInvalidDefendPosition(ant.Target);
+                            
+                            //reset ant
+                            ant.Target = null;
+                            ant.Route = null;
+                            ant.Mode = AntMode.None;
+                        }
+                    }
+                }
+
                 ant.WaitTime++;
 
                 if (ant.Mode == AntMode.None) {
@@ -66,6 +79,9 @@ namespace Ants {
                         if (ant.Route2.Count > 1 && state.GetIsUnoccupied(ant.Route2[1])) {
                             IssueOrder(state, ant, GetDirectionFromPath(ant.Route2, state));
                             ant.Route2.RemoveAt(0);
+
+                                //original route has become invalid
+                                ant.Route = null;
                         } else {
                             ant.Target2 = null;
                             ant.Route2 = null;
@@ -116,9 +132,9 @@ namespace Ants {
                             }
                         } else {
                             //calculate route using search1, if it fails, try search2
-                            ant.Route = search1.AStar(ant, ant.Target, distance * 2);
+                            ant.Route = search1.AStar(ant, ant.Target, distance * 3);
                             if (ant.Route == null) {
-                                ant.Route = search2.AStar(ant, ant.Target, distance * 2);
+                                ant.Route = search2.AStar(ant, ant.Target, distance * 3);
                             }
                         }
                     }

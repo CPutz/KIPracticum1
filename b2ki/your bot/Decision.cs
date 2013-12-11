@@ -194,6 +194,13 @@ namespace Ants {
         }
 
 
+        public void ReportInvalidDefendPosition(Location location) {
+            if (defendPositions.Contains(location)) {
+                defendPositions.Remove(location);
+            }
+        }
+
+
         /// <summary>
         /// Calculates all explorables.
         /// </summary>
