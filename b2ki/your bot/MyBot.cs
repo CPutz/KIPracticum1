@@ -6,7 +6,6 @@ namespace Ants {
 	class MyBot : Bot {
 
         private DecisionMaker decision;
-        //private List<Ant> onHill;
 
         public MyBot() : base() {
             this.decision = new DecisionMaker();
