@@ -46,10 +46,6 @@ namespace Ants {
             this.defending = new List<Ant>();
         }
 
-        public void AddTarget(Location target) {
-            this.attackTargets.Add(target);
-        }
-
 
         /// <summary>
         /// Updates priority parameters and much other stuff. Should be called every new turn.
@@ -280,13 +276,13 @@ namespace Ants {
         /// </summary>
         /// <param name="ant">The ant to search an explorable for.</param>
         /// <param name="state">The gamestate.</param>
-        /// <returns>A location that is not visible, passible, and cannot be attacked in one turn if
+        /// <returns>A location that is not visible, passable, and cannot be attacked in one turn if
         /// there exists one, <c>null</c> otherwist.</returns>
         public Location GetExplorable(Ant ant, IGameState state) {
             Location location = null;
 
             if (explorables.Count > 0) {
-                //try 5 times to find an explorable location within distance exploreDistance
+                //try 10 times to find an explorable location within distance exploreDistance
                 for (int i = 0; i < 10; ++i) {
                     location = explorables[random.Next(explorables.Count)];
                     if (state.GetDistance(location, ant) <= exploreDistance) {

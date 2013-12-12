@@ -119,7 +119,7 @@ namespace Ants {
                     }
 
                     //if an ant has no route or the current route is not passable (crosses water), recalculate it.
-                    //we have to check whether a route is passible, because at the beginning of the match, we don't 
+                    //we have to check whether a route is passable, because at the beginning of the match, we don't 
                     //know the map looks like. we could plan a route that later turns out to cross water.
                     if (ant.Target != null && (ant.Route == null || ant.Route.Count > 1 && !state.GetIsPassable(ant.Route[1]))) {
 

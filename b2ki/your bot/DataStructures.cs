@@ -3,6 +3,76 @@ using System.Collections.Generic;
 
 namespace Ants {
 
+    /// <summary>
+    /// Just a List for Locations that is extended with a boolean map for a fast Contains function.
+    /// </summary>
+    public class Map<T> : IEnumerable<T> where T : Location {
+        public int Width { get; private set; }
+        public int Height { get; private set; }
+        public int Count { get { return items.Count; } }
+
+        private bool[,] map;
+        private List<T> items;
+
+        public Map(int width, int height)
+            : base() {
+            this.Width = width;
+            this.Height = height;
+
+            this.map = new bool[Height, Width];
+            this.items = new List<T>();
+        }
+
+        public T this[int index] {
+            get { return items[index]; }
+        }
+
+        public bool Contains(Location loc) {
+            return map[loc.Row, loc.Col];
+        }
+
+        public bool Contains(int row, int col) {
+            return map[row, col];
+        }
+
+        public int IndexOf(T item) {
+            return items.IndexOf(item);
+        }
+
+        public void Add(T item) {
+            if (!map[item.Row, item.Col]) {
+                map[item.Row, item.Col] = true;
+                items.Add(item);
+            } else {
+                throw new ArgumentException("There already exists an element with this Location");
+            }
+        }
+
+        public void Remove(T item) {
+            map[item.Row, item.Col] = false;
+            items.Remove(item);
+        }
+
+        public void Clear() {
+            map = new bool[Height, Width];
+            items.Clear();
+        }
+
+        public IEnumerator<T> GetEnumerator() {
+            foreach (T item in items) {
+                if (item == null) {
+                    break;
+                }
+                yield return item;
+            }
+        }
+
+        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() {
+            return GetEnumerator();
+        }
+    }
+
+
     class MinHeap<T> : Heap<T> where T : IComparable {
         public MinHeap(int maxLength) : base(maxLength) { }
 
@@ -141,133 +211,6 @@ namespace Ants {
 
         private int Right(int i) {
             return 2 * (i + 1);
-        }
-    }
-
-
-    class LinkedList<T> : IEnumerable<T>
-    {
-        public T First {
-            get {
-                if (head != null) return head.Value;
-                else return default(T);
-            }
-        }
-
-        public int Size { get; private set; }
-
-        private LLElement<T> head;
-        private LLElement<T> last;
-
-        public LinkedList() {
-            this.Size = 0;
-        }
-
-        public void Add(T key) {
-            LLElement<T> k = new LLElement<T>(key);
-            if (this.head != null)
-                this.last.Next = k;
-            else
-                this.head = k;
-            this.last = k;
-
-            this.Size++;
-        }
-
-        public bool Remove(T key) {
-            LLElement<T> x = head;
-            LLElement<T> prev = null;
-
-            while (x != null) {
-                if (x.Value.Equals(key)) {
-                    if (prev != null) {
-                        prev.Next = x.Next;
-                    } else {
-                        head = x.Next;
-                    }
-                    if (x == last) {
-                        last = prev;
-                    }
-
-                    this.Size--;
-                    return true;
-                }
-
-                prev = x;
-                x = x.Next;
-            }
-
-            return false;
-        }
-
-        public T Search(T key) {
-            LLElement<T> x = this.head;
-
-            while (x != null)
-            {
-                if (x.Value.Equals(key))
-                    return x.Value;
-
-                x = x.Next;
-            }
-
-            return default(T);
-        }
-
-
-        public void Reverse() {
-            LLElement<T> x = this.head;
-
-            Stack<LLElement<T>> s = new Stack<LLElement<T>>(this.Size);
-
-            while (x != null) {
-                s.Push(x);
-                x = x.Next;
-            }
-
-            x = s.Pop();
-            this.head = x;
-
-            while (s.Count > 0) {
-                x.Next = s.Pop();
-                x = x.Next;
-            }
-
-            x.Next = null;
-            this.last = x;
-        }
-
-
-        public IEnumerator<T> GetEnumerator() {
-            LLElement<T> x = this.head;
-
-            while (x != null)
-            {
-                yield return x.Value;
-                x = x.Next;
-            }
-        }
-
-        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() {
-            return GetEnumerator();
-        }
-    }
-
-    class LLElement<T> {
-        private LLElement<T> next;
-        private T val;
-
-        public LLElement(T key) {
-            val = key;
-        }
-
-        public LLElement<T> Next {
-            get { return next; }
-            set { next = value; }
-        }
-
-        public T Value {
-            get { return val; }
         }
     }
 }
